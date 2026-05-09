@@ -424,7 +424,43 @@ function startTimer(){const e=document.getElementById('timer-disp');const i=setI
 function updatePositionsAndProgress(){const heroWrap=document.getElementById('hero-wrap');const bossWrap=document.getElementById('boss-wrap');const barH=document.getElementById('bar-h');const barB=document.getElementById('bar-b');const heroAdvantage=battleState-50;const heroMove=Math.max(0,heroAdvantage)*2;const bossMove=Math.max(0,-heroAdvantage)*2;heroWrap.style.transform=\`translateX(\${heroMove}%)\`;bossWrap.style.transform=\`translateX(-\${bossMove}%)\`;barH.style.width=\`\${battleState}%\`;barB.style.width=\`\${100-battleState}%\`;if(battleState>=100)endGame(true);else if(battleState<=0)endGame(false);}
 function loadNextQuestion(){isAnswered=false;currentQIndex++;const isGameEnd=currentQIndex>=quests.length;if(isGameEnd){endGame(battleState>50);return;}if(locations.length>0&&currentQIndex>0){locIndex=(locIndex+1)%locations.length;document.body.style.backgroundImage=\`url(\${locations[locIndex]})\`;}const q=quests[currentQIndex];document.getElementById('q-text').innerText=q.text;const p=document.getElementById('q-inputs');let html='';if(q.type==='choice'){const ans=[{t:q.correct,c:true}];q.wrongs.forEach(w=>{if(w)ans.push({t:w,c:false});});ans.sort(()=>Math.random()-0.5);html=\`<div class="btns">\${ans.map(a=>\`<button data-correct="\${a.c}" class="game-btn" onclick="checkChoice(this,\${a.c})">\${a.t}</button>\`).join('')}</div>\`;}else{html=\`<div class="inp-area"><div class="inp-row"><input type="text" id="inp-ans" placeholder="..." autocomplete="off"><button class="game-btn" onclick="checkInput()">OK</button></div></div>\`;}p.innerHTML=html;}
 function showScore(targetId,text,color){const scorePopup=document.getElementById(targetId.replace('-wrap','-score-popup'));const targetEl=document.getElementById(targetId);const targetRect=targetEl.getBoundingClientRect();scorePopup.innerText=text;scorePopup.style.color=color;scorePopup.style.textShadow=\`0 0 10px \${color}\`;scorePopup.style.left=targetRect.left+targetRect.width/2+'px';scorePopup.style.top=targetRect.top-20+'px';scorePopup.classList.add('show');setTimeout(()=>{scorePopup.classList.remove('show');},1000);}
-function animateAttack(attackerId,targetId,color, scoreText){const projectile=document.getElementById('projectile');const attacker=document.getElementById(attackerId);const target=document.getElementById(targetId);const targetImg=document.getElementById(targetId.replace('-wrap','-img'));const startRect=attacker.getBoundingClientRect();const targetRect=target.getBoundingClientRect();const startX=startRect.left+startRect.width/2;const startY=startRect.top+startRect.height/2;const endX=targetRect.left+targetRect.width/2;const endY=targetRect.top+targetRect.height/2;projectile.style.background=color;projectile.style.boxShadow=\`0 0 15px \${color}, 0 0 25px \${color}\`;projectile.style.left=startX+'px';projectile.style.top=startY+'px';projectile.style.opacity='1';projectile.style.transform='scale(1)';setTimeout(()=>{projectile.style.left=endX+'px';projectile.style.top=endY+'px';},50);setTimeout(()=>{beep('hit');projectile.style.transform='scale(3)';projectile.style.opacity='0';targetImg.style.animation='fx-shake 0.4s';targetImg.style.filter=\`drop-shadow(0 0 25px \${color})\`;showScore(attackerId,scoreText, 'var(--green)');setTimeout(()=>{targetImg.style.animation='';targetImg.style.filter='';},400);},550);}
+function animateAttack(attackerId,targetId,color, scoreText){
+    const projectile=document.getElementById('projectile');
+    const attacker=document.getElementById(attackerId);
+    const target=document.getElementById(targetId);
+    const targetImg=document.getElementById(targetId.replace('-wrap','-img'));
+    const battleGround=document.querySelector('.battle-ground'); // Получаем battle-ground
+    
+    const startCharRect=attacker.getBoundingClientRect();
+    const targetCharRect=target.getBoundingClientRect();
+    const battleGroundRect=battleGround.getBoundingClientRect(); // Получаем rect battle-ground
+    
+    // Вычисляем позиции относительно battle-ground
+    const startX=(startCharRect.left+startCharRect.width/2)-battleGroundRect.left;
+    const startY=(startCharRect.top+startCharRect.height/2)-battleGroundRect.top;
+    const endX=(targetCharRect.left+targetCharRect.width/2)-battleGroundRect.left;
+    const endY=(targetCharRect.top+targetCharRect.height/2)-battleGroundRect.top;
+    
+    projectile.style.background=color;
+    projectile.style.boxShadow=\`0 0 15px \${color}, 0 0 25px \${color}\`;
+    projectile.style.left=startX+'px';
+    projectile.style.top=startY+'px';
+    projectile.style.opacity='1';
+    projectile.style.transform='scale(1)';
+    // Устанавливаем конечную позицию немедленно, чтобы переход начался сразу
+    projectile.style.left=endX+'px';
+    projectile.style.top=endY+'px';
+    
+    setTimeout(()=>{
+        beep('hit');
+        projectile.style.transform='scale(3)';
+        projectile.style.opacity='0';
+        targetImg.style.animation='fx-shake 0.4s';
+        targetImg.style.filter=\`drop-shadow(0 0 25px \${color})\`;
+        showScore(attackerId,scoreText, 'var(--green)');
+        setTimeout(()=>{targetImg.style.animation='';targetImg.style.filter='';},400);
+    },550);
+}
 function checkChoice(b,isCor){if(isAnswered)return;isAnswered=true;document.querySelectorAll('.btns .game-btn').forEach(btn=>btn.disabled=true);if(isCor){handleCorrect(b);}else{handleWrong(b);const correctBtn=document.querySelector('.game-btn[data-correct=\\"true\\"]');if(correctBtn)correctBtn.style.background='var(--green)';}}
 function checkInput(){if(isAnswered)return;isAnswered=true;const i=document.getElementById('inp-ans');i.disabled=true;document.querySelector('.inp-area .game-btn').disabled=true;if(i.value.trim().toLowerCase()===(quests[currentQIndex].correctInp||'').trim().toLowerCase()){handleCorrect(i);}else{handleWrong(i);const hint=document.createElement('div');hint.className='correct-answer-hint';hint.innerText='Верный ответ: '+quests[currentQIndex].correctInp;i.closest('.inp-area').appendChild(hint);}}
 function handleCorrect(el){document.body.style.pointerEvents='none';animateAttack('hero-wrap','boss-wrap','var(--green)','+100');if(el.tagName==='BUTTON'){el.style.background='var(--green)';el.style.color='#000';}else{el.style.borderColor='var(--green)';}setTimeout(()=>{battleState=Math.min(100,battleState+step);updatePositionsAndProgress();document.body.style.pointerEvents='';if(battleState<100)loadNextQuestion();},1000);}
@@ -455,7 +491,7 @@ body{margin:0;overflow:hidden;font-family:'Rajdhani',sans-serif;user-select:none
 .media-controls { display: flex; gap: 10px; }
 .media-btn { background: rgba(35,31,52,0.8); color: #fff; border: 1px solid var(--primary); border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display:flex; align-items: center; justify-content: center;}
 .stage-area{flex:1;position:relative;overflow:hidden;}
-.battle-ground { position: absolute; inset: 0 5%; bottom: 0; }
+.battle-ground { position: absolute; inset: 0 5%; bottom: 0; padding-bottom: 230px; } /* ИЗМЕНЕНО: Добавлен padding-bottom */
 /* UPDATED: char-wrap to match editor, remove fixed height/bottom */
 .char-wrap{
     width:40%; 
@@ -469,7 +505,7 @@ body{margin:0;overflow:hidden;font-family:'Rajdhani',sans-serif;user-select:none
 .hero-wrap{left:0;}
 .boss-wrap{right:0;}
 .char{max-width:100%;max-height:100%;object-fit:contain;transition:filter 0.5s, opacity 0.5s;}
-#projectile { position: fixed; width: 30px; height: 30px; border-radius: 50%; opacity: 0; z-index: 100; transition: left 0.5s linear, top 0.5s linear, transform 0.2s, opacity 0.2s; pointer-events: none; transform-origin: center; margin-left: -15px; margin-top: -15px; }
+#projectile { position: absolute; width: 30px; height: 30px; border-radius: 50%; opacity: 0; z-index: 100; transition: left 0.5s linear, top 0.5s linear, transform 0.2s, opacity 0.2s; pointer-events: none; transform-origin: center; margin-left: -15px; margin-top: -15px; } /* ИЗМЕНЕНО: position: absolute */
 .score-popup{position:fixed;z-index:101;opacity:0;font-family:'Press Start 2P',cursive;font-size:20px;transform:translateX(-50%);pointer-events:none;}
 .score-popup.show{animation:float-up-fade 1s ease-out forwards;}
 .ui-panel{background:rgba(18,16,30,0.95);padding:20px;border-top:4px solid #00e5ff;display:flex;flex-direction:column;align-items:center;gap:15px;min-height:180px;box-shadow:0 -10px 50px rgba(0,0,0,0.5);z-index:20;}
