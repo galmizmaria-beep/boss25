@@ -144,7 +144,7 @@
             boss:{src:'',anim:'idle',size:100,gC:'#ff0055',gP:0,speed:3},
             timer:5,
             timerOn:true,
-            titleScreenOn:true // NEW: Added title screen toggle
+            titleScreenOn:true
         },
         anims:[{id:'idle',name:'Покой'},{id:'float',name:'Парение'},{id:'pulse',name:'Пульс'},{id:'shake',name:'Тряска'},{id:'glitch',name:'Глюк'},{id:'spin',name:'Вращение'},{id:'neon',name:'Неон'},{id:'wobble',name:'Шатание'},{id:'swing',name:'Качание'},{id:'bounce',name:'Прыжок'},{id:'flip',name:'Переворот'},{id:'ghost',name:'Призрак'}],
         
@@ -155,10 +155,12 @@
         setGameLang(l){this.gameLang=l;const btnContainer=document.querySelector('#sec_quests .sub-tabs');btnContainer.children[0].classList.toggle('active',l==='ru');btnContainer.children[1].classList.toggle('active',l==='en');document.getElementById('lang_ru_fields').style.display=l==='ru'?'block':'none';document.getElementById('lang_en_fields').style.display=l==='en'?'block':'none';},
         renderAnims(target){const grid=document.getElementById('ag_'+target);grid.innerHTML='';this.anims.forEach(a=>{const b=document.createElement('div');b.className='fx-btn'+(this.data[target].anim===a.id?' active':'');b.innerText=a.name;b.onclick=()=>{this.data[target].anim=a.id;this.renderAnims(target);this.updatePreview();};grid.appendChild(b);});},
 
-        // NEW: Image compression function
-        async loadImageAndCompress(source, type = 'file', quality = 0.7, maxWidth = 1024, maxHeight = 1024) {
+        // Обновленная функция loadImageAndCompress для сохранения прозрачности PNG
+        async loadImageAndCompress(source, quality = 0.7, maxWidth = 1024, maxHeight = 1024) {
             return new Promise(async (resolve) => {
                 const img = new Image();
+                let detectedMimeType = 'image/jpeg'; // По умолчанию JPEG, если не удалось определить
+
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
@@ -166,7 +168,7 @@
                     let width = img.width;
                     let height = img.height;
 
-                    // Calculate new dimensions while maintaining aspect ratio
+                    // Вычисление новых размеров с сохранением пропорций
                     if (width > maxWidth || height > maxHeight) {
                         const ratio = Math.min(maxWidth / width, maxHeight / height);
                         width *= ratio;
@@ -175,74 +177,95 @@
                     
                     canvas.width = width;
                     canvas.height = height;
+                    // Отрисовка изображения на холсте. Прозрачные изображения будут иметь прозрачный фон по умолчанию.
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    let compressedDataUrl;
+                    if (detectedMimeType === 'image/png' || detectedMimeType === 'image/webp') {
+                        // Для PNG и WebP сохраняем как PNG для сохранения прозрачности
+                        compressedDataUrl = canvas.toDataURL('image/png'); // Качество PNG по умолчанию 1.0 (без потерь)
+                    } else {
+                        // Для других форматов (например, JPEG) сохраняем как JPEG с указанным качеством
+                        compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    }
                     resolve(compressedDataUrl);
                 };
                 img.onerror = (e) => {
                     console.error('Error loading image:', e);
-                    resolve(''); // Resolve with empty string or default image on error
+                    resolve(''); 
                 };
 
-                if (type === 'file') {
+                if (source instanceof File) {
+                    detectedMimeType = source.type; // Получаем MIME-тип из объекта File
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         img.src = e.target.result;
                     };
                     reader.readAsDataURL(source);
-                } else { // type === 'url'
-                    try {
-                        // Attempt to fetch and convert to DataURL to avoid CORS issues in srcdoc and ensure compression
-                        const response = await fetch(source, { mode: 'cors' }); // Try with CORS mode
-                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                        const blob = await response.blob();
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            img.src = e.target.result;
-                        };
-                        reader.onerror = (e) => {
-                            console.error('Error reading blob as DataURL:', e);
-                            resolve('');
-                        };
-                        reader.readAsDataURL(blob);
-                    } catch (error) {
-                        console.warn(`Could not fetch image from URL directly (might be CORS issue), trying to load as is: ${source}`, error);
-                        // Fallback to directly setting src if fetch fails, might still hit CORS
+                } else if (typeof source === 'string') { // Если это URL
+                    // Проверяем, является ли URL уже Data URL
+                    if (source.startsWith('data:')) {
+                        const mimeMatch = source.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,/);
+                        if (mimeMatch && mimeMatch[1]) {
+                            detectedMimeType = mimeMatch[1];
+                        }
                         img.src = source;
+                    } else {
+                        // Пытаемся получить MIME-тип через fetch
+                        try {
+                            const response = await fetch(source, { mode: 'cors' });
+                            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                            const blob = await response.blob();
+                            detectedMimeType = blob.type; // Получаем MIME-тип из Blob
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                img.src = e.target.result;
+                            };
+                            reader.onerror = (e) => {
+                                console.error('Error reading blob as DataURL:', e);
+                                resolve('');
+                            };
+                            reader.readAsDataURL(blob);
+                        } catch (error) {
+                            console.warn(`Could not fetch image from URL directly (might be CORS issue), falling back to direct src set. Transparency might not be preserved if original was PNG and was not a data URL: ${source}`, error);
+                            // В случае ошибки fetch, напрямую устанавливаем src.
+                            // detectedMimeType останется 'image/jpeg' по умолчанию,
+                            // что может привести к потере прозрачности для кросс-доменных PNG.
+                            img.src = source; 
+                        }
                     }
+                } else {
+                    console.error('Invalid source type for loadImageAndCompress');
+                    resolve('');
                 }
             });
         },
 
-        // MODIFIED: handleImage to use compression
+        // Вызовы функций handleImage и handleImageURL теперь используют новую loadImageAndCompress без параметра 'type'
         async handleImage(file,target){
             if(file){
-                const compressedData = await this.loadImageAndCompress(file, 'file', 0.7, 1024, 1024); // 0.7 quality, max 1024px for chars
+                const compressedData = await this.loadImageAndCompress(file, 0.7, 1024, 1024); // 0.7 quality, max 1024px for chars
                 this.data[target].src=compressedData;
                 this.updatePreview();
             }
         },
-        // NEW: handleImageURL for characters
         async handleImageURL(url, target){
             if(url){
-                const compressedData = await this.loadImageAndCompress(url, 'url', 0.7, 1024, 1024); // 0.7 quality, max 1024px for chars
+                const compressedData = await this.loadImageAndCompress(url, 0.7, 1024, 1024); // 0.7 quality, max 1024px for chars
                 this.data[target].src = compressedData;
                 this.updatePreview();
             }
         },
-        // MODIFIED: handleLocations to use compression
         async handleLocations(files){
             for(let file of files){
-                const compressedData = await this.loadImageAndCompress(file, 'file', 0.8, 1920, 1080); // 0.8 quality, max 1920x1080 for backgrounds
+                const compressedData = await this.loadImageAndCompress(file, 0.8, 1920, 1080); // 0.8 quality, max 1920x1080 for backgrounds
                 this.locations.push({name:file.name,data:compressedData});
             }
             this.renderLocationList();
         },
-        // NEW: addLocationURL for backgrounds
         async addLocationURL(url){
             if(url){
-                const compressedData = await this.loadImageAndCompress(url, 'url', 0.8, 1920, 1080); // 0.8 quality, max 1920x1080 for backgrounds
+                const compressedData = await this.loadImageAndCompress(url, 0.8, 1920, 1080); // 0.8 quality, max 1920x1080 for backgrounds
                 const name = url.substring(url.lastIndexOf('/') + 1) || 'URL Image';
                 this.locations.push({name: name, data: compressedData});
                 this.renderLocationList();
@@ -258,7 +281,6 @@
             document.getElementById('f_loc').onchange=e=>this.handleLocations(e.target.files);
             document.getElementById('f_music').onchange=e=>this.handleMusic(e.target.files[0]);
             
-            // NEW: Bind event for title screen checkbox
             document.getElementById('chk_title_screen').onchange=e=>{this.data.titleScreenOn=e.target.checked;this.updatePreview();};
 
             ['hero','boss'].forEach(t=>{document.getElementById('i_'+t.charAt(0)+'_name').oninput=()=>this.updatePreview();});
@@ -290,7 +312,6 @@
             const hStyle=`width:${d.hero.size}%;filter:${d.hero.gP>0?`drop-shadow(0 0 ${d.hero.gP}px ${d.hero.gC})`:''};${getAnimRule(d.hero)}`;
             const bStyle=`width:${d.boss.size}%;filter:${d.boss.gP>0?`drop-shadow(0 0 ${d.boss.gP}px ${d.boss.gC})`:''};${getAnimRule(d.boss)}`;
 
-            // NEW: Conditional overlay HTML
             const generatedOverlay = d.titleScreenOn ? `<div class="overlay" id="start-overlay"><div class="big-title">${langData[this.gameLang].title.replace(/\|/g, '<br>')}</div><button class="play-btn" onclick="startGame()"> ${langData[this.gameLang].play}</button></div>` : '';
 
             const script=`<script>
@@ -318,7 +339,6 @@ function checkInput(){if(isAnswered)return;isAnswered=true;const i=document.getE
 function handleCorrect(el){document.body.style.pointerEvents='none';animateAttack('hero-wrap','boss-wrap','var(--green)','+100');if(el.tagName==='BUTTON'){el.style.background='var(--green)';el.style.color='#000';}else{el.style.borderColor='var(--green)';}setTimeout(()=>{battleState=Math.min(100,battleState+step);updatePositionsAndProgress();document.body.style.pointerEvents='';if(battleState<100)loadNextQuestion();},1000);}
 function handleWrong(el){document.body.style.pointerEvents='none';animateAttack('boss-wrap','hero-wrap','var(--red)','+100');if(el.tagName==='BUTTON'){el.style.background='var(--red)';}else{el.style.borderColor='var(--red)';}setTimeout(()=>{battleState=Math.max(0,battleState-step);updatePositionsAndProgress();document.body.style.pointerEvents='';if(battleState>0)loadNextQuestion();},1000);}
 function endGame(didWin){if(isGameOver)return;isGameOver=true;document.body.style.pointerEvents='none';if(document.getElementById('timer-wrap')) document.getElementById('timer-wrap').style.display='none';const p=document.getElementById('q-panel');p.innerHTML="";let msg,color,winnerImg, winnerId;if(didWin===true){msg=langPack.win;color='var(--green)';document.getElementById('boss-img').style.opacity='0';winnerImg=document.getElementById('hero-img');winnerId='hero-wrap';}else{msg=langPack.lose;color='var(--red)';document.getElementById('hero-img').style.opacity='0';winnerImg=document.getElementById('boss-img');winnerId='boss-wrap';}if(winnerImg){winnerImg.style.animation='fx-bounce 1s ease-in-out infinite';showScore(winnerId, '+1000', 'var(--green)');}p.innerHTML=\`<h2 style='font-size:40px;color:\${color};text-shadow:0 0 20px \${color}'>\${msg}</h2>\`;}
-// NEW: Call startGame directly if title screen is off
 ${!d.titleScreenOn ? "document.addEventListener('DOMContentLoaded', startGame);" : ""}
 <\/script>`;
             const html=`<!DOCTYPE html><html><head><style>
