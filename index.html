@@ -44,23 +44,17 @@
         .hp-fill-preview { height: 100%; transition: 0.3s; }
         .hud-char-name { font-size: 16px; font-weight: 900; color: #fff; text-shadow: 1px 1px 0 #000; white-space: nowrap; }
         .timer-preview { flex-shrink: 0; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 28px; background: rgba(0,0,0,0.5); color: #ffd700; padding: 2px 12px; border-radius: 6px; letter-spacing: 2px; border: 1px solid rgba(255,255,255,0.2); }
-        .battle-area { flex: 1; display: flex; justify-content: space-around; align-items: center; z-index: 2; position: absolute; inset: 0; padding-bottom: 230px; }
+        .battle-area { flex: 1; display: flex; justify-content: space-around; align-items: center; z-index: 2; position: absolute; inset: 0; padding-bottom: 180px; }
         
-        /* UPDATED: Unified .char-box styles for editor preview */
         .char-box { 
-            width: 40%; /* Use percentage for width */
-            height: auto; /* Height determined by content */
-            display: flex; 
-            align-items: flex-end; 
-            justify-content: center; 
-            position: absolute; 
-            transition: bottom 0.3s ease-out; /* Keep transition for smooth movement */
+            width: 40%; height: auto; display: flex; align-items: flex-end; justify-content: center; 
+            position: absolute; transition: bottom 0.3s ease-out;
         }
         .char-box:first-child { left: 10%; } /* Hero */
         .char-box:last-child { right: 10%; } /* Boss */
         
         .char-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: 0.3s; }
-        .quest-dock { position: absolute; bottom: 60px; left: 0; right: 0; background: var(--bg-panel); border-top: 3px solid var(--cyan); padding: 15px; z-index: 10; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+        .quest-dock { position: absolute; bottom: 0; left: 0; right: 0; background: var(--bg-panel); border-top: 3px solid var(--cyan); padding: 15px; z-index: 10; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
         .q-preview-text { color: #fff; font-size: 18px; font-weight: 700; text-align: center; margin-top: 20px; }
         .q-preview-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
         .q-dummy-btn { background: #333; color: #fff; padding: 8px 20px; border: 2px solid #555; border-radius: 5px; font-weight: 700; font-size: 12px; cursor: pointer; transition: 0.2s; }
@@ -268,28 +262,28 @@
 
         async handleImage(file,target){
             if(file){
-                const compressedData = await this.loadImageAndCompress(file, 0.7, 1024, 1024);
+                const compressedData = await this.loadImageAndCompress(file, 0.7, 512, 512);
                 this.data[target].src=compressedData;
                 this.updatePreview();
             }
         },
         async handleImageURL(url, target){
             if(url){
-                const compressedData = await this.loadImageAndCompress(url, 0.7, 1024, 1024);
+                const compressedData = await this.loadImageAndCompress(url, 0.7, 512, 512);
                 this.data[target].src = compressedData;
                 this.updatePreview();
             }
         },
         async handleLocations(files){
             for(let file of files){
-                const compressedData = await this.loadImageAndCompress(file, 0.8, 1920, 1080);
+                const compressedData = await this.loadImageAndCompress(file, 0.75, 1280, 1280);
                 this.locations.push({name:file.name,data:compressedData});
             }
             this.renderLocationList();
         },
         async addLocationURL(url){
             if(url){
-                const compressedData = await this.loadImageAndCompress(url, 0.8, 1920, 1080);
+                const compressedData = await this.loadImageAndCompress(url, 0.75, 1280, 1280);
                 const name = url.substring(url.lastIndexOf('/') + 1) || 'URL Image';
                 this.locations.push({name: name, data: compressedData});
                 this.renderLocationList();
@@ -399,7 +393,6 @@
             const qData={hName:document.getElementById('i_h_name').value,bName:document.getElementById('i_b_name').value};
             const getAnimRule=o=>{if(o.anim==='none')return'';let dur=(11-o.speed)*0.5;if(['shake','wobble'].includes(o.anim))dur*=.5;let timing='ease-in-out';if(['glitch'].includes(o.anim))timing=`steps(${Math.round(dur*10)})`;if(['shake','spin','flip'].includes(o.anim))timing='linear';return`animation:fx-${o.anim} ${dur}s infinite ${timing};transform-origin:${o.anim==='swing'?'top center':'center'};`;};
             
-            // UPDATED: hImgStyle and bImgStyle now include width and height:auto for the image
             const hImgStyle=`width:${d.hero.size}%; height:auto; filter:${d.hero.gP>0?`drop-shadow(0 0 ${d.hero.gP}px ${d.hero.gC})`:''};${getAnimRule(d.hero)}`;
             const bImgStyle=`width:${d.boss.size}%; height:auto; filter:${d.boss.gP>0?`drop-shadow(0 0 ${d.boss.gP}px ${d.boss.gC})`:''};${getAnimRule(d.boss)}`;
 
@@ -416,7 +409,7 @@ function startGame(){
     ${d.titleScreenOn ? "document.getElementById('start-overlay').style.display='none';" : ""}
     document.getElementById('game-root').style.opacity='1';
     const music=document.getElementById('bg-music');
-    if(music){music.volume=0.3;music.play();const muteBtn=document.getElementById('mute-btn');const pauseBtn=document.getElementById('pause-btn');muteBtn.onclick=()=>{music.muted=!music.muted;muteBtn.innerText=music.muted?'🔇':'🔊';};pauseBtn.onclick=()=>{if(music.paused){music.play();pauseBtn.innerText='⏸️';}else{music.pause();pauseBtn.innerText='▶️';}};}
+    if(music){music.volume=0.3;music.play().catch(e=>console.log("Autoplay blocked"));const muteBtn=document.getElementById('mute-btn');const pauseBtn=document.getElementById('pause-btn');muteBtn.onclick=()=>{music.muted=!music.muted;muteBtn.innerText=music.muted?'🔇':'🔊';};pauseBtn.onclick=()=>{if(music.paused){music.play();pauseBtn.innerText='⏸️';}else{music.pause();pauseBtn.innerText='▶️';}};}
     if(timerOn)startTimer();
     loadNextQuestion();
 }
@@ -429,28 +422,21 @@ function animateAttack(attackerId,targetId,color, scoreText){
     const attacker=document.getElementById(attackerId);
     const target=document.getElementById(targetId);
     const targetImg=document.getElementById(targetId.replace('-wrap','-img'));
-    const battleGround=document.querySelector('.battle-ground'); // Получаем battle-ground
-    
+    const battleGround=document.querySelector('.battle-ground');
     const startCharRect=attacker.getBoundingClientRect();
     const targetCharRect=target.getBoundingClientRect();
-    const battleGroundRect=battleGround.getBoundingClientRect(); // Получаем rect battle-ground
-    
-    // Вычисляем позиции относительно battle-ground
+    const battleGroundRect=battleGround.getBoundingClientRect();
     const startX=(startCharRect.left+startCharRect.width/2)-battleGroundRect.left;
     const startY=(startCharRect.top+startCharRect.height/2)-battleGroundRect.top;
     const endX=(targetCharRect.left+targetCharRect.width/2)-battleGroundRect.left;
     const endY=(targetCharRect.top+targetCharRect.height/2)-battleGroundRect.top;
-    
     projectile.style.background=color;
     projectile.style.boxShadow=\`0 0 15px \${color}, 0 0 25px \${color}\`;
     projectile.style.left=startX+'px';
     projectile.style.top=startY+'px';
     projectile.style.opacity='1';
     projectile.style.transform='scale(1)';
-    // Устанавливаем конечную позицию немедленно, чтобы переход начался сразу
-    projectile.style.left=endX+'px';
-    projectile.style.top=endY+'px';
-    
+    setTimeout(()=>{projectile.style.left=endX+'px';projectile.style.top=endY+'px';}, 10);
     setTimeout(()=>{
         beep('hit');
         projectile.style.transform='scale(3)';
@@ -491,21 +477,15 @@ body{margin:0;overflow:hidden;font-family:'Rajdhani',sans-serif;user-select:none
 .media-controls { display: flex; gap: 10px; }
 .media-btn { background: rgba(35,31,52,0.8); color: #fff; border: 1px solid var(--primary); border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display:flex; align-items: center; justify-content: center;}
 .stage-area{flex:1;position:relative;overflow:hidden;}
-.battle-ground { position: absolute; inset: 0 5%; bottom: 0; padding-bottom: 230px; } /* ИЗМЕНЕНО: Добавлен padding-bottom */
-/* UPDATED: char-wrap to match editor, remove fixed height/bottom */
+.battle-ground { position: absolute; inset: 0 5%; bottom: 0; padding-bottom: 200px; }
 .char-wrap{
-    width:40%; 
-    height:auto; 
-    display:flex; 
-    align-items:flex-end; 
-    justify-content:center; 
-    position:absolute;
-    transition:transform 1s ease-in-out, opacity 0.5s;
+    width:40%; height:auto; display:flex; align-items:flex-end; justify-content:center; 
+    position:absolute; transition:transform 1s ease-in-out, opacity 0.5s;
 }
 .hero-wrap{left:0;}
 .boss-wrap{right:0;}
 .char{max-width:100%;max-height:100%;object-fit:contain;transition:filter 0.5s, opacity 0.5s;}
-#projectile { position: absolute; width: 30px; height: 30px; border-radius: 50%; opacity: 0; z-index: 100; transition: left 0.5s linear, top 0.5s linear, transform 0.2s, opacity 0.2s; pointer-events: none; transform-origin: center; margin-left: -15px; margin-top: -15px; } /* ИЗМЕНЕНО: position: absolute */
+#projectile { position: absolute; width: 30px; height: 30px; border-radius: 50%; opacity: 0; z-index: 100; transition: left 0.5s linear, top 0.5s linear, transform 0.2s, opacity 0.2s; pointer-events: none; transform-origin: center; margin-left: -15px; margin-top: -15px; }
 .score-popup{position:fixed;z-index:101;opacity:0;font-family:'Press Start 2P',cursive;font-size:20px;transform:translateX(-50%);pointer-events:none;}
 .score-popup.show{animation:float-up-fade 1s ease-out forwards;}
 .ui-panel{background:rgba(18,16,30,0.95);padding:20px;border-top:4px solid #00e5ff;display:flex;flex-direction:column;align-items:center;gap:15px;min-height:180px;box-shadow:0 -10px 50px rgba(0,0,0,0.5);z-index:20;}
@@ -532,7 +512,6 @@ ${generatedOverlay}
     <div class="player-info ui-element"><span class="char-name">${qData.bName}</span><div class="hp-bar"><div id="bar-b" class="hp-fill" style="background:var(--red);width:50%;"></div></div></div>
 </div>
 <div class="stage-area"><div class="battle-ground"><div class="score-popup" id="hero-score-popup"></div><div class="score-popup" id="boss-score-popup"></div>
-    <!-- UPDATED: char-wrap inline style, removed height and added bottom -->
     <div class="char-wrap hero-wrap" id="hero-wrap" style="bottom:${d.hero.landingOffset}%;">
         <img src="${d.hero.src}" class="char" id="hero-img" style="${hImgStyle}">
     </div>
