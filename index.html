@@ -1,7 +1,7 @@
 <div id="FX_ROOT">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Montserrat:wght@400;700;900&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        @import url('https://fonts://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         #FX_ROOT {
             --bg-dark: #0A0912; --bg-panel: #12101E; --primary: #8A2BE2; --cyan: #00D2FF;
             --green: #00FF88; --red: #ff3b30; --text: #EAEAEA; --border: rgba(138, 43, 226, 0.3);
@@ -45,7 +45,10 @@
         .hud-char-name { font-size: 16px; font-weight: 900; color: #fff; text-shadow: 1px 1px 0 #000; white-space: nowrap; }
         .timer-preview { flex-shrink: 0; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 28px; background: rgba(0,0,0,0.5); color: #ffd700; padding: 2px 12px; border-radius: 6px; letter-spacing: 2px; border: 1px solid rgba(255,255,255,0.2); }
         .battle-area { flex: 1; display: flex; justify-content: space-around; align-items: center; z-index: 2; position: absolute; inset: 0; padding-bottom: 230px; }
-        .char-box { width: 300px; height: 350px; display: flex; align-items: flex-end; justify-content: center; }
+        /* Adjusted .char-box to allow 'bottom' style control */
+        .char-box { width: 300px; height: 350px; display: flex; align-items: flex-end; justify-content: center; position: absolute; bottom: 0; transition: bottom 0.3s ease-out; }
+        .char-box:first-child { left: 10%; } /* Hero */
+        .char-box:last-child { right: 10%; } /* Boss */
         .char-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: 0.3s; }
         .quest-dock { position: absolute; bottom: 60px; left: 0; right: 0; background: var(--bg-panel); border-top: 3px solid var(--cyan); padding: 15px; z-index: 10; min-height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
         .q-preview-text { color: #fff; font-size: 18px; font-weight: 700; text-align: center; margin-top: 20px; }
@@ -59,6 +62,21 @@
         .gen-panel { padding: 15px; border-top: 2px solid #000; background: var(--bg-panel); }
         .btn-generate { background: var(--green); color: #000; padding: 12px 25px; width: 100%; font-size: 14px; font-family: 'Rajdhani', sans-serif; font-weight: 700; text-transform: uppercase; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 0 15px var(--green); transition: 0.3s; }
         .btn-generate:hover { box-shadow: 0 0 30px var(--green); filter: brightness(1.2); }
+        /* NEW: Preview projectile styles */
+        .preview-projectile {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            opacity: 0;
+            z-index: 100;
+            transition: left 0.5s linear, top 0.5s linear, transform 0.2s, opacity 0.2s;
+            pointer-events: none;
+            transform-origin: center;
+            margin-left: -15px; /* Center it */
+            margin-top: -15px; /* Center it */
+        }
+
         @keyframes fx-idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes fx-float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-15px) rotate(2deg)}}@keyframes fx-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}@keyframes fx-shake{0%{transform:translate(1px, 1px)}20%{transform:translate(-3px, 0px)}40%{transform:translate(1px, -1px)}60%{transform:translate(-3px, 1px)}80%{transform:translate(-1px, -1px)}100%{transform:translate(1px, -2px)}}@keyframes fx-glitch{0%{transform:translate(0)}20%{transform:translate(-2px, 2px)}40%{transform:translate(-2px, -2px)}60%{transform:translate(2px, 2px)}80%{transform:translate(2px, -2px)}100%{transform:translate(0)}}@keyframes fx-spin{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}@keyframes fx-neon{0%,100%{opacity:1;filter:brightness(1)}50%{opacity:0.8;filter:brightness(1.5)}}@keyframes fx-wobble{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}@keyframes fx-swing{0%{transform:rotate(0deg)}20%{transform:rotate(15deg)}40%{transform:rotate(-10deg)}60%{transform:rotate(5deg)}80%{transform:rotate(-5deg)}100%{transform:rotate(0deg)}}@keyframes fx-bounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-30px)}60%{transform:translateY(-15px)}}@keyframes fx-flip{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}@keyframes fx-ghost{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.05)}}
     </style>
     <div class="view-editor">
@@ -78,7 +96,14 @@
                             <div style="display:flex; gap:5px;"><input type="text" class="fx-input" id="i_h_url" placeholder="Вставьте URL"><button class="fx-btn" style="flex-shrink:0;" onclick="app.handleImageURL(document.getElementById('i_h_url').value, 'hero')">ИСПОЛЬЗОВАТЬ</button></div>
                         </div>
                         <div class="control-group"><span class="control-label">Анимация</span><div class="anim-grid" id="ag_hero"></div></div>
-                        <div class="control-group"><span class="control-label">Параметры</span><div class="param-row"><span>Размер</span><input type="range" id="r_h_size" min="50" max="150" value="100" style="width:60%"></div><div class="param-row"><span>Свечение</span><input type="range" id="r_h_glow" min="0" max="50" value="0" style="width:60%"><input type="color" id="c_h_glow" value="#00e5ff" style="border:none;width:20px;height:20px;background:none;padding:0;"></div><div class="param-row"><span>Скорость анимации</span><input type="range" id="r_h_speed" min="1" max="10" value="3" style="width:60%"></div></div>
+                        <div class="control-group"><span class="control-label">Параметры</span><div class="param-row"><span>Размер</span><input type="range" id="r_h_size" min="50" max="150" value="100" style="width:60%"></div><div class="param-row"><span>Свечение</span><input type="range" id="r_h_glow" min="0" max="50" value="0" style="width:60%"><input type="color" id="c_h_glow" value="#00e5ff" style="border:none;width:20px;height:20px;background:none;padding:0;"></div><div class="param-row"><span>Скорость анимации</span><input type="range" id="r_h_speed" min="1" max="10" value="3" style="width:60%"></div>
+                            <!-- NEW: Landing Offset Slider for Hero -->
+                            <div class="param-row">
+                                <span>Приземление</span>
+                                <input type="range" id="r_h_landing" min="0" max="40" value="15" style="width:60%">
+                                <span id="val_h_landing" style="width:10%; text-align: right;">15%</span>
+                            </div>
+                        </div>
                     </div>
                     <div id="cfg_boss" style="display:none;">
                         <div class="control-group">
@@ -91,7 +116,14 @@
                             <div style="display:flex; gap:5px;"><input type="text" class="fx-input" id="i_b_url" placeholder="Вставьте URL"><button class="fx-btn" style="flex-shrink:0;" onclick="app.handleImageURL(document.getElementById('i_b_url').value, 'boss')">ИСПОЛЬЗОВАТЬ</button></div>
                         </div>
                         <div class="control-group"><span class="control-label">Анимация</span><div class="anim-grid" id="ag_boss"></div></div>
-                        <div class="control-group"><span class="control-label">Параметры</span><div class="param-row"><span>Размер</span><input type="range" id="r_b_size" min="50" max="150" value="100" style="width:60%"></div><div class="param-row"><span>Свечение</span><input type="range" id="r_b_glow" min="0" max="50" value="0" style="width:60%"><input type="color" id="c_b_glow" value="#ff0055" style="border:none;width:20px;height:20px;background:none;padding:0;"></div><div class="param-row"><span>Скорость анимации</span><input type="range" id="r_b_speed" min="1" max="10" value="3" style="width:60%"></div></div>
+                        <div class="control-group"><span class="control-label">Параметры</span><div class="param-row"><span>Размер</span><input type="range" id="r_b_size" min="50" max="150" value="100" style="width:60%"></div><div class="param-row"><span>Свечение</span><input type="range" id="r_b_glow" min="0" max="50" value="0" style="width:60%"><input type="color" id="c_b_glow" value="#ff0055" style="border:none;width:20px;height:20px;background:none;padding:0;"></div><div class="param-row"><span>Скорость анимации</span><input type="range" id="r_b_speed" min="1" max="10" value="3" style="width:60%"></div>
+                            <!-- NEW: Landing Offset Slider for Boss -->
+                            <div class="param-row">
+                                <span>Приземление</span>
+                                <input type="range" id="r_b_landing" min="0" max="40" value="15" style="width:60%">
+                                <span id="val_b_landing" style="width:10%; text-align: right;">15%</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="section-content" id="sec_quests">
@@ -124,7 +156,12 @@
                 <div class="timer-preview" id="p_timer">05:00</div>
                 <div class="hud-player right"><span class="hud-char-name" id="p_b_name"></span><div class="hp-bar-preview"><div id="hp_b_preview" class="hp-fill-preview" style="background:var(--red); width:50%;"></div></div></div>
             </div>
-            <div class="battle-area"><div class="char-box" id="prev_hero_box"><img src="" class="char-img" id="img_hero"></div><div class="char-box" id="prev_boss_box"><img src="" class="char-img" id="img_boss"></div></div>
+            <div class="battle-area">
+                <div class="char-box" id="prev_hero_box"><img src="" class="char-img" id="img_hero"></div>
+                <div class="char-box" id="prev_boss_box"><img src="" class="char-img" id="img_boss"></div>
+            </div>
+            <!-- NEW: Preview Projectile for editor stage -->
+            <div id="prev_projectile" class="preview-projectile"></div>
             <div class="quest-dock">
                  <div class="q-preview-nav" style="position: absolute; top: 10px; width: 100%; display: flex; justify-content: space-between; padding: 0 20px;">
                     <button id="prev_q_btn" class="fx-btn" onclick="app.prevPreviewQuest()">◀</button>
@@ -140,26 +177,35 @@
     <script>
         const app={previewQuestIndex:0,currentQuestIndex:-1,quests:[],locations:[],musicFile:null,gameLang:'ru',
         data:{
-            hero:{src:'',anim:'idle',size:100,gC:'#00e5ff',gP:0,speed:3},
-            boss:{src:'',anim:'idle',size:100,gC:'#ff0055',gP:0,speed:3},
+            hero:{src:'',anim:'idle',size:100,gC:'#00e5ff',gP:0,speed:3, landingOffset: 15}, // NEW: landingOffset
+            boss:{src:'',anim:'idle',size:100,gC:'#ff0055',gP:0,speed:3, landingOffset: 15}, // NEW: landingOffset
             timer:5,
             timerOn:true,
             titleScreenOn:true
         },
         anims:[{id:'idle',name:'Покой'},{id:'float',name:'Парение'},{id:'pulse',name:'Пульс'},{id:'shake',name:'Тряска'},{id:'glitch',name:'Глюк'},{id:'spin',name:'Вращение'},{id:'neon',name:'Неон'},{id:'wobble',name:'Шатание'},{id:'swing',name:'Качание'},{id:'bounce',name:'Прыжок'},{id:'flip',name:'Переворот'},{id:'ghost',name:'Призрак'}],
         
-        init(){this.renderAnims('hero');this.renderAnims('boss');this.bindEvents();this.addQuest(true);this.updatePreview();},
+        previewAttackTimer: null,
+        previewAttackInterval: 2000, // Interval for preview attacks
+        
+        init(){
+            this.renderAnims('hero');
+            this.renderAnims('boss');
+            this.bindEvents();
+            this.addQuest(true);
+            this.updatePreview();
+            this.doPreviewAttack(); // Start the preview attack loop on init
+        },
         setMainTab(t){document.querySelectorAll('.main-tab-link').forEach(e=>e.classList.remove('active'));document.querySelector(`[onclick="app.setMainTab('${t}')"]`).classList.add('active');document.getElementById('sec_chars').classList.toggle('show',t==='chars');document.getElementById('sec_quests').classList.toggle('show',t==='quests');},
         setCharTab(t){document.querySelector('#sec_chars .sub-tab-link.active').classList.remove('active');document.querySelector(`[onclick="app.setCharTab('${t}')"]`).classList.add('active');document.getElementById('cfg_hero').style.display=t==='hero'?'block':'none';document.getElementById('cfg_boss').style.display=t==='boss'?'block':'none';},
         setQType(t){document.querySelector('#quest-editor-panel #b_choice').className=t==='choice'?'sub-tab-link active':'sub-tab-link';document.querySelector('#quest-editor-panel #b_input').className=t==='input'?'sub-tab-link active':'sub-tab-link';document.querySelector('#quest-editor-panel #area_choice').style.display=t==='choice'?'block':'none';document.querySelector('#quest-editor-panel #area_input').style.display=t==='input'?'block':'none';},
         setGameLang(l){this.gameLang=l;const btnContainer=document.querySelector('#sec_quests .sub-tabs');btnContainer.children[0].classList.toggle('active',l==='ru');btnContainer.children[1].classList.toggle('active',l==='en');document.getElementById('lang_ru_fields').style.display=l==='ru'?'block':'none';document.getElementById('lang_en_fields').style.display=l==='en'?'block':'none';},
         renderAnims(target){const grid=document.getElementById('ag_'+target);grid.innerHTML='';this.anims.forEach(a=>{const b=document.createElement('div');b.className='fx-btn'+(this.data[target].anim===a.id?' active':'');b.innerText=a.name;b.onclick=()=>{this.data[target].anim=a.id;this.renderAnims(target);this.updatePreview();};grid.appendChild(b);});},
 
-        // Обновленная функция loadImageAndCompress для сохранения прозрачности PNG
         async loadImageAndCompress(source, quality = 0.7, maxWidth = 1024, maxHeight = 1024) {
             return new Promise(async (resolve) => {
                 const img = new Image();
-                let detectedMimeType = 'image/jpeg'; // По умолчанию JPEG, если не удалось определить
+                let detectedMimeType = 'image/jpeg';
 
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
@@ -168,7 +214,6 @@
                     let width = img.width;
                     let height = img.height;
 
-                    // Вычисление новых размеров с сохранением пропорций
                     if (width > maxWidth || height > maxHeight) {
                         const ratio = Math.min(maxWidth / width, maxHeight / height);
                         width *= ratio;
@@ -177,15 +222,12 @@
                     
                     canvas.width = width;
                     canvas.height = height;
-                    // Отрисовка изображения на холсте. Прозрачные изображения будут иметь прозрачный фон по умолчанию.
                     ctx.drawImage(img, 0, 0, width, height);
                     
                     let compressedDataUrl;
                     if (detectedMimeType === 'image/png' || detectedMimeType === 'image/webp') {
-                        // Для PNG и WebP сохраняем как PNG для сохранения прозрачности
-                        compressedDataUrl = canvas.toDataURL('image/png'); // Качество PNG по умолчанию 1.0 (без потерь)
+                        compressedDataUrl = canvas.toDataURL('image/png');
                     } else {
-                        // Для других форматов (например, JPEG) сохраняем как JPEG с указанным качеством
                         compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
                     }
                     resolve(compressedDataUrl);
@@ -196,14 +238,13 @@
                 };
 
                 if (source instanceof File) {
-                    detectedMimeType = source.type; // Получаем MIME-тип из объекта File
+                    detectedMimeType = source.type;
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         img.src = e.target.result;
                     };
                     reader.readAsDataURL(source);
-                } else if (typeof source === 'string') { // Если это URL
-                    // Проверяем, является ли URL уже Data URL
+                } else if (typeof source === 'string') {
                     if (source.startsWith('data:')) {
                         const mimeMatch = source.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,/);
                         if (mimeMatch && mimeMatch[1]) {
@@ -211,12 +252,11 @@
                         }
                         img.src = source;
                     } else {
-                        // Пытаемся получить MIME-тип через fetch
                         try {
                             const response = await fetch(source, { mode: 'cors' });
                             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                             const blob = await response.blob();
-                            detectedMimeType = blob.type; // Получаем MIME-тип из Blob
+                            detectedMimeType = blob.type;
                             const reader = new FileReader();
                             reader.onload = (e) => {
                                 img.src = e.target.result;
@@ -228,9 +268,6 @@
                             reader.readAsDataURL(blob);
                         } catch (error) {
                             console.warn(`Could not fetch image from URL directly (might be CORS issue), falling back to direct src set. Transparency might not be preserved if original was PNG and was not a data URL: ${source}`, error);
-                            // В случае ошибки fetch, напрямую устанавливаем src.
-                            // detectedMimeType останется 'image/jpeg' по умолчанию,
-                            // что может привести к потере прозрачности для кросс-доменных PNG.
                             img.src = source; 
                         }
                     }
@@ -241,35 +278,34 @@
             });
         },
 
-        // Вызовы функций handleImage и handleImageURL теперь используют новую loadImageAndCompress без параметра 'type'
         async handleImage(file,target){
             if(file){
-                const compressedData = await this.loadImageAndCompress(file, 0.7, 1024, 1024); // 0.7 quality, max 1024px for chars
+                const compressedData = await this.loadImageAndCompress(file, 0.7, 1024, 1024);
                 this.data[target].src=compressedData;
                 this.updatePreview();
             }
         },
         async handleImageURL(url, target){
             if(url){
-                const compressedData = await this.loadImageAndCompress(url, 0.7, 1024, 1024); // 0.7 quality, max 1024px for chars
+                const compressedData = await this.loadImageAndCompress(url, 0.7, 1024, 1024);
                 this.data[target].src = compressedData;
                 this.updatePreview();
             }
         },
         async handleLocations(files){
             for(let file of files){
-                const compressedData = await this.loadImageAndCompress(file, 0.8, 1920, 1080); // 0.8 quality, max 1920x1080 for backgrounds
+                const compressedData = await this.loadImageAndCompress(file, 0.8, 1920, 1080);
                 this.locations.push({name:file.name,data:compressedData});
             }
             this.renderLocationList();
         },
         async addLocationURL(url){
             if(url){
-                const compressedData = await this.loadImageAndCompress(url, 0.8, 1920, 1080); // 0.8 quality, max 1920x1080 for backgrounds
+                const compressedData = await this.loadImageAndCompress(url, 0.8, 1920, 1080);
                 const name = url.substring(url.lastIndexOf('/') + 1) || 'URL Image';
                 this.locations.push({name: name, data: compressedData});
                 this.renderLocationList();
-                document.getElementById('i_loc_url').value = ''; // Clear input
+                document.getElementById('i_loc_url').value = '';
             }
         },
         renderLocationList(){const c=document.getElementById('location-list');c.innerHTML='';this.locations.forEach((loc,i)=>{const item=document.createElement('div');item.className='list-item';item.innerHTML=`<span>${i+1}. ${loc.name}</span><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteLocation(${i})">X</button>`;c.appendChild(item);});c.style.display=this.locations.length>0?'flex':'none';this.updatePreview();},
@@ -286,19 +322,176 @@
             ['hero','boss'].forEach(t=>{document.getElementById('i_'+t.charAt(0)+'_name').oninput=()=>this.updatePreview();});
             const bindS=(id,target,key)=>document.getElementById(id).oninput=e=>{this.data[target][key]=e.target.value;this.updatePreview();};
             bindS('r_h_size','hero','size');bindS('r_b_size','boss','size');bindS('r_h_glow','hero','gP');bindS('r_b_glow','boss','gP');bindS('r_h_speed','hero','speed');bindS('r_b_speed','boss','speed');
+
+            // NEW: Landing Offset sliders binding
+            document.getElementById('r_h_landing').oninput = e => {
+                this.data.hero.landingOffset = e.target.value;
+                document.getElementById('val_h_landing').innerText = e.target.value + '%';
+                this.updatePreview();
+            };
+            document.getElementById('r_b_landing').oninput = e => {
+                this.data.boss.landingOffset = e.target.value;
+                document.getElementById('val_b_landing').innerText = e.target.value + '%';
+                this.updatePreview();
+            };
+            // Initial display of landing offset values
+            document.getElementById('val_h_landing').innerText = this.data.hero.landingOffset + '%';
+            document.getElementById('val_b_landing').innerText = this.data.boss.landingOffset + '%';
+
+
             document.getElementById('c_h_glow').oninput=e=>{this.data.hero.gC=e.target.value;this.updatePreview();};
             document.getElementById('c_b_glow').oninput=e=>{this.data.boss.gC=e.target.value;this.updatePreview();};
             document.getElementById('chk_timer').onchange=e=>{this.data.timerOn=e.target.checked;this.updatePreview();};
             document.getElementById('r_timer').oninput=e=>{this.data.timer=e.target.value;document.getElementById('val_timer').innerText=e.target.value;this.updatePreview();};
         },
-        renderQuestList(){const list=document.getElementById('quest-list');list.innerHTML='';this.quests.forEach((q,i)=>{const item=document.createElement('div');item.className='list-item';item.innerHTML=`<span>${i+1}. ${q.text||'Новый вопрос'}</span><div><button class="fx-btn" onclick="app.editQuest(${i})">✏️</button><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteQuest(${i})">🗑️</button></div>`;list.appendChild(item);});this.updatePreview();},
+        renderQuestList(){const list=document.getElementById('quest-list');list.innerHTML='';this.quests.forEach((q,i)=>{const item=document.createElement('div');item.className='list-item';item.innerHTML=`<span>${i+1}. ${q.text||'Новый вопрос'}</span><div><button class="fx-btn" onclick="app.editQuest(${i})">✏️</button><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteQuest(${i})">🗑️️</button></div>`;list.appendChild(item);});this.updatePreview();},
         addQuest(isFirst=false){const newQ={type:'choice',text:'Сколько будет 2 + 2?',correct:'4',wrongs:['5','22'],correctInp:'4'};this.quests.push(newQ);if(!isFirst)this.renderQuestList();this.editQuest(this.quests.length-1);},
         editQuest(index){this.currentQuestIndex=index;const q=this.quests[index];document.getElementById('editor-title').innerText=`ЗАДАНИЕ #${index+1}`;this.setQType(q.type);document.getElementById('i_q_text').value=q.text;document.getElementById('i_c_ans').value=q.correct;document.getElementById('i_w1').value=q.wrongs[0];document.getElementById('i_w2').value=q.wrongs[1];document.getElementById('i_in_ans').value=q.correctInp;document.getElementById('quest-list-container').style.display='none';document.getElementById('quest-editor-panel').style.display='block';},
         saveQuest(){if(this.currentQuestIndex===-1)return;const q=this.quests[this.currentQuestIndex];q.type=document.querySelector('#quest-editor-panel .sub-tab-link.active').id==='b_choice'?'choice':'input';q.text=document.getElementById('i_q_text').value;if(q.type==='choice'){q.correct=document.getElementById('i_c_ans').value;q.wrongs=[document.getElementById('i_w1').value,document.getElementById('i_w2').value];}else{q.correctInp=document.getElementById('i_in_ans').value;}this.previewQuestIndex=this.currentQuestIndex;document.getElementById('quest-list-container').style.display='block';document.getElementById('quest-editor-panel').style.display='none';this.renderQuestList();},
         deleteQuest(index){if(confirm(`Удалить задание #${index+1}?`)){this.quests.splice(index,1);this.previewQuestIndex=0;this.renderQuestList();}},
         prevPreviewQuest(){if(this.previewQuestIndex>0){this.previewQuestIndex--;this.updatePreview();}},
         nextPreviewQuest(){if(this.previewQuestIndex<this.quests.length-1){this.previewQuestIndex++;this.updatePreview();}},
-        updatePreview(){const h=this.data.hero;const b=this.data.boss;const hud=document.getElementById('preview-hud');document.getElementById('stage_bg').style.backgroundImage=this.locations.length>0?`url(${this.locations[0].data})`:'none';document.getElementById('p_h_name').innerText=document.getElementById('i_h_name').value;document.getElementById('p_b_name').innerText=document.getElementById('i_b_name').value;document.getElementById('p_timer').style.display=this.data.timerOn?'block':'none';document.getElementById('p_timer').innerText=this.data.timerOn?(this.data.timer<10?'0'+this.data.timer:this.data.timer)+':00':'';const currentQ=this.quests[this.previewQuestIndex]||{text:'Настройте задания...'};document.getElementById('prev_q_text').innerText=(this.quests.length>0?`(${this.previewQuestIndex+1}/${this.quests.length}) `:'')+currentQ.text;const btnsDiv=document.getElementById('prev_q_btns');btnsDiv.innerHTML='';const prevBtn=document.getElementById('prev_q_btn');prevBtn.disabled=this.previewQuestIndex===0;const nextBtn=document.getElementById('next_q_btn');nextBtn.disabled=this.previewQuestIndex>=this.quests.length-1||this.quests.length===0;if(this.quests.length>0){if(currentQ.type==='choice'){let answers=[{t:currentQ.correct,c:true}];if(currentQ.wrongs[0])answers.push({t:currentQ.wrongs[0],c:false});if(currentQ.wrongs[1])answers.push({t:currentQ.wrongs[1],c:false});answers.sort(()=>Math.random()-0.5);let btnsHTML=answers.map(a=>`<div class="q-dummy-btn" onclick="app.previewAnswer(this,${a.c})">${a.t}</div>`).join('');btnsDiv.innerHTML=btnsHTML;}else{btnsDiv.innerHTML=`<input id="preview_input_ans" type="text" class="fx-input" style="width:150px; text-align:center;" placeholder="Ваш ответ..."><div class="q-dummy-btn" onclick="app.previewInputAnswer()">OK</div>`;}}const apply=(elId,d)=>{const img=document.getElementById(elId);img.src=d.src;img.parentNode.style.width=d.size*0.4+'%';img.style.filter=d.gP>0?`drop-shadow(0 0 ${d.gP}px ${d.gC})`:'none';let dur=(11-d.speed)*0.5;if(['shake','wobble'].includes(d.anim))dur*=.5;let timing='ease-in-out';if(['glitch'].includes(d.anim))timing=`steps(${Math.round(dur*10)})`;if(['shake','spin','flip'].includes(d.anim))timing='linear';img.style.animation=d.anim!=='none'?`fx-${d.anim} ${dur}s infinite ${timing}`:'none';img.style.transformOrigin=d.anim==='swing'?'top center':'center';};apply('img_hero',h);apply('img_boss',b);},
+        updatePreview(){
+            const h=this.data.hero;
+            const b=this.data.boss;
+            const hud=document.getElementById('preview-hud');
+            
+            document.getElementById('stage_bg').style.backgroundImage=this.locations.length>0?`url(${this.locations[0].data})`:'none';
+            document.getElementById('p_h_name').innerText=document.getElementById('i_h_name').value;
+            document.getElementById('p_b_name').innerText=document.getElementById('i_b_name').value;
+            document.getElementById('p_timer').style.display=this.data.timerOn?'block':'none';
+            document.getElementById('p_timer').innerText=this.data.timerOn?(this.data.timer<10?'0'+this.data.timer:this.data.timer)+':00':'';
+            
+            const currentQ=this.quests[this.previewQuestIndex]||{text:'Настройте задания...'};
+            document.getElementById('prev_q_text').innerText=(this.quests.length>0?`(${this.previewQuestIndex+1}/${this.quests.length}) `:'')+currentQ.text;
+            const btnsDiv=document.getElementById('prev_q_btns');
+            btnsDiv.innerHTML='';
+            const prevBtn=document.getElementById('prev_q_btn');
+            prevBtn.disabled=this.previewQuestIndex===0;
+            const nextBtn=document.getElementById('next_q_btn');
+            nextBtn.disabled=this.previewQuestIndex>=this.quests.length-1||this.quests.length===0;
+
+            if(this.quests.length>0){
+                if(currentQ.type==='choice'){
+                    let answers=[{t:currentQ.correct,c:true}];
+                    if(currentQ.wrongs[0])answers.push({t:currentQ.wrongs[0],c:false});
+                    if(currentQ.wrongs[1])answers.push({t:currentQ.wrongs[1],c:false});
+                    answers.sort(()=>Math.random()-0.5);
+                    let btnsHTML=answers.map(a=>`<div class="q-dummy-btn" onclick="app.previewAnswer(this,${a.c})">${a.t}</div>`).join('');
+                    btnsDiv.innerHTML=btnsHTML;
+                }else{
+                    btnsDiv.innerHTML=`<input id="preview_input_ans" type="text" class="fx-input" style="width:150px; text-align:center;" placeholder="Ваш ответ..."><div class="q-dummy-btn" onclick="app.previewInputAnswer()">OK</div>`;
+                }
+            }
+            
+            const apply=(elId,d)=>{
+                const img=document.getElementById(elId);
+                const charBox = img.parentNode;
+                img.src=d.src;
+                charBox.style.width=d.size*0.4+'%';
+                charBox.style.bottom = d.landingOffset + '%'; // Apply landing offset
+                img.style.filter=d.gP>0?`drop-shadow(0 0 ${d.gP}px ${d.gC})`:'none';
+                let dur=(11-d.speed)*0.5;
+                if(['shake','wobble'].includes(d.anim))dur*=.5;
+                let timing='ease-in-out';
+                if(['glitch'].includes(d.anim))timing=`steps(${Math.round(dur*10)})`;
+                if(['shake','spin','flip'].includes(d.anim))timing='linear';
+                img.style.animation=d.anim!=='none'?`fx-${d.anim} ${dur}s infinite ${timing}`:'none';
+                img.style.transformOrigin=d.anim==='swing'?'top center':'center';
+            };
+            apply('img_hero',h);
+            apply('img_boss',b);
+
+            // NEW: Clear previous preview attack loop and restart to reflect changes
+            if (this.previewAttackTimer) {
+                clearTimeout(this.previewAttackTimer);
+            }
+            // Hide projectile instantly when settings change
+            document.getElementById('prev_projectile').style.opacity = '0';
+            document.getElementById('prev_projectile').style.transform = 'scale(1)';
+            this.previewAttackTimer = setTimeout(() => {
+                 this.doPreviewAttack();
+            }, this.previewAttackInterval); // Short delay to let other updates finish
+        },
+        doPreviewAttack() {
+            // Check if character images are loaded, otherwise skip or wait
+            if (!document.getElementById('img_hero').src || !document.getElementById('img_boss').src) {
+                this.previewAttackTimer = setTimeout(() => this.doPreviewAttack(), this.previewAttackInterval);
+                return;
+            }
+
+            const heroBox = document.getElementById('prev_hero_box');
+            const bossBox = document.getElementById('prev_boss_box');
+            const heroImg = document.getElementById('img_hero');
+            const bossImg = document.getElementById('img_boss');
+            const projectile = document.getElementById('prev_projectile');
+
+            // Alternate attacker
+            const currentAttacker = Math.random() < 0.5 ? 'hero' : 'boss';
+            let attackerEl, targetEl, targetImg, color, targetData;
+
+            if (currentAttacker === 'hero') {
+                attackerEl = heroBox;
+                targetEl = bossBox;
+                targetImg = bossImg;
+                color = this.data.hero.gC; // Use hero's glow color for projectile
+                targetData = this.data.boss;
+            } else {
+                attackerEl = bossBox;
+                targetEl = heroBox;
+                targetImg = heroImg;
+                color = this.data.boss.gC; // Use boss's glow color for projectile
+                targetData = this.data.hero;
+            }
+
+            const startRect = attackerEl.getBoundingClientRect();
+            const targetRect = targetEl.getBoundingClientRect();
+
+            // Calculate start/end positions for projectile (centered on characters)
+            const startX = startRect.left + startRect.width / 2;
+            const startY = startRect.top + startRect.height / 2;
+            const endX = targetRect.left + targetRect.width / 2;
+            const endY = targetRect.top + targetRect.height / 2;
+
+            projectile.style.background = color;
+            projectile.style.boxShadow = `0 0 15px ${color}, 0 0 25px ${color}`;
+            projectile.style.left = startX + 'px';
+            projectile.style.top = startY + 'px';
+            projectile.style.opacity = '1';
+            projectile.style.transform = 'scale(1)';
+
+            // First part of animation: move projectile
+            setTimeout(() => {
+                projectile.style.left = endX + 'px';
+                projectile.style.top = endY + 'px';
+            }, 50);
+
+            // Second part: hit effect and reset
+            setTimeout(() => {
+                projectile.style.transform = 'scale(3)';
+                projectile.style.opacity = '0';
+                
+                // Apply shake and glow to target
+                targetImg.style.animation = 'fx-shake 0.4s';
+                targetImg.style.filter = `drop-shadow(0 0 25px ${color})`;
+
+                // Reset target styles after animation
+                setTimeout(() => {
+                    let dur=(11-targetData.speed)*0.5;
+                    let timing='ease-in-out';
+                    if(['glitch'].includes(targetData.anim))timing=`steps(${Math.round(dur*10)})`;
+                    if(['shake','spin','flip'].includes(targetData.anim))timing='linear';
+                    targetImg.style.animation = targetData.anim !== 'none' ? `fx-${targetData.anim} ${dur}s infinite ${timing}` : 'none';
+                    targetImg.style.filter = targetData.gP > 0 ? `drop-shadow(0 0 ${targetData.gP}px ${targetData.gC})` : 'none';
+                }, 400);
+
+                // Reschedule the next attack in the loop
+                this.previewAttackTimer = setTimeout(() => {
+                    this.doPreviewAttack();
+                }, this.previewAttackInterval);
+
+            }, 550); // After projectile arrives
+        },
         previewAnswer(btn,isCorrect){btn.classList.add(isCorrect?'correct':'wrong');setTimeout(()=>btn.classList.remove('correct','wrong'),500);},
         previewInputAnswer(){const input=document.getElementById('preview_input_ans');const q=this.quests[this.previewQuestIndex];if(!input||!q)return;const isCorrect=input.value.trim().toLowerCase()===q.correctInp.trim().toLowerCase();input.classList.add(isCorrect?'correct':'wrong');setTimeout(()=>input.classList.remove('correct','wrong'),800);},
         generate(){
@@ -308,9 +501,11 @@
                 en:{title:document.getElementById('i_title_en').value,win:document.getElementById('i_win_msg_en').value,lose:document.getElementById('i_lose_msg_en').value,play:document.getElementById('i_play_btn_en').value}
             };
             const qData={hName:document.getElementById('i_h_name').value,bName:document.getElementById('i_b_name').value};
-            const getAnimRule=o=>{if(o.anim==='none')return'';let dur=(11-o.speed)*0.5;if(['shake','wobble'].includes(o.anim))dur*=.5;let timing='ease-in-out';if(['glitch'].includes(o.anim))timing=`steps(${Math.round(dur*10)})`;if(['shake','spin','flip'].includes(d.anim))timing='linear';return`animation:fx-${o.anim} ${dur}s infinite ${timing};transform-origin:${o.anim==='swing'?'top center':'center'};`;};
-            const hStyle=`width:${d.hero.size}%;filter:${d.hero.gP>0?`drop-shadow(0 0 ${d.hero.gP}px ${d.hero.gC})`:''};${getAnimRule(d.hero)}`;
-            const bStyle=`width:${d.boss.size}%;filter:${d.boss.gP>0?`drop-shadow(0 0 ${d.boss.gP}px ${d.boss.gC})`:''};${getAnimRule(d.boss)}`;
+            const getAnimRule=o=>{if(o.anim==='none')return'';let dur=(11-o.speed)*0.5;if(['shake','wobble'].includes(o.anim))dur*=.5;let timing='ease-in-out';if(['glitch'].includes(o.anim))timing=`steps(${Math.round(dur*10)})`;if(['shake','spin','flip'].includes(o.anim))timing='linear';return`animation:fx-${o.anim} ${dur}s infinite ${timing};transform-origin:${o.anim==='swing'?'top center':'center'};`;};
+            
+            // MODIFIED: Apply char-specific styles to the img itself and landing offset to char-wrap
+            const hImgStyle=`width:${d.hero.size}%;filter:${d.hero.gP>0?`drop-shadow(0 0 ${d.hero.gP}px ${d.hero.gC})`:''};${getAnimRule(d.hero)}`;
+            const bImgStyle=`width:${d.boss.size}%;filter:${d.boss.gP>0?`drop-shadow(0 0 ${d.boss.gP}px ${d.boss.gC})`:''};${getAnimRule(d.boss)}`;
 
             const generatedOverlay = d.titleScreenOn ? `<div class="overlay" id="start-overlay"><div class="big-title">${langData[this.gameLang].title.replace(/\|/g, '<br>')}</div><button class="play-btn" onclick="startGame()"> ${langData[this.gameLang].play}</button></div>` : '';
 
@@ -365,7 +560,7 @@ body{margin:0;overflow:hidden;font-family:'Rajdhani',sans-serif;user-select:none
 .media-btn { background: rgba(35,31,52,0.8); color: #fff; border: 1px solid var(--primary); border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display:flex; align-items: center; justify-content: center;}
 .stage-area{flex:1;position:relative;overflow:hidden;}
 .battle-ground { position: absolute; inset: 0 5%; bottom: 0; }
-.char-wrap{width:40%;height:85%;display:flex;align-items:flex-end;justify-content:center;position:absolute;bottom:0;transition:transform 1s ease-in-out, opacity 0.5s;}.hero-wrap{left:0;}.boss-wrap{right:0;}
+.char-wrap{width:40%;height:85%;display:flex;align-items:flex-end;justify-content:center;position:absolute;transition:transform 1s ease-in-out, opacity 0.5s;}.hero-wrap{left:0;}.boss-wrap{right:0;} /* Removed bottom:0 here, will be set inline */
 .char{max-width:100%;max-height:100%;object-fit:contain;transition:filter 0.5s, opacity 0.5s;}
 #projectile { position: fixed; width: 30px; height: 30px; border-radius: 50%; opacity: 0; z-index: 100; transition: left 0.5s linear, top 0.5s linear, transform 0.2s, opacity 0.2s; pointer-events: none; transform-origin: center; margin-left: -15px; margin-top: -15px; }
 .score-popup{position:fixed;z-index:101;opacity:0;font-family:'Press Start 2P',cursive;font-size:20px;transform:translateX(-50%);pointer-events:none;}
@@ -393,7 +588,7 @@ ${generatedOverlay}
     </div>
     <div class="player-info ui-element"><span class="char-name">${qData.bName}</span><div class="hp-bar"><div id="bar-b" class="hp-fill" style="background:var(--red);width:50%;"></div></div></div>
 </div>
-<div class="stage-area"><div class="battle-ground"><div class="score-popup" id="hero-score-popup"></div><div class="score-popup" id="boss-score-popup"></div><div class="char-wrap hero-wrap" id="hero-wrap"><img src="${d.hero.src}" class="char" id="hero-img" style="${hStyle}"></div><div class="char-wrap boss-wrap" id="boss-wrap"><img src="${d.boss.src}" class="char" id="boss-img" style="${bStyle}"></div></div></div>
+<div class="stage-area"><div class="battle-ground"><div class="score-popup" id="hero-score-popup"></div><div class="score-popup" id="boss-score-popup"></div><div class="char-wrap hero-wrap" id="hero-wrap" style="bottom:${d.hero.landingOffset}%;"><img src="${d.hero.src}" class="char" id="hero-img" style="${hImgStyle}"></div><div class="char-wrap boss-wrap" id="boss-wrap" style="bottom:${d.boss.landingOffset}%;"><img src="${d.boss.src}" class="char" id="boss-img" style="${bImgStyle}"></div></div></div>
 <div class="ui-panel" id="q-panel"><div class="q-text" id="q-text"></div><div id="q-inputs"></div></div>
 </div>${script}</body></html>`;
             const area=document.getElementById('hidden_code');area.value=`<iframe srcdoc="${html.replace(/"/g,'&quot;')}" width="100%" height="100%" frameborder="0" style="background:transparent;display:block"></iframe>`;area.select();document.execCommand('copy');const btn=document.getElementById('b_gen');const old=btn.innerText;btn.innerText="ГОТОВО!";btn.style.background="#fff";setTimeout(()=>{btn.innerText=old;btn.style.background="";},1500);
