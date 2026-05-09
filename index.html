@@ -276,8 +276,8 @@
             musicFile: null, // {name: '', data: File|URL_string}
             gameLang: 'ru',
             data: {
-                hero: { src: '', anim: 'idle', size: 100, gC: '#00e5ff', gP: 0, speed: 3, srcType: 'none' }, // src stores File or URL string
-                boss: { src: '', anim: 'idle', size: 100, gC: '#ff0055', gP: 0, speed: 3, srcType: 'none' }, // src stores File or URL string
+                hero: { src: '', anim: 'idle', size: 100, gC: '#00e5ff', gP: 0, speed: 3 }, // src stores File or URL string
+                boss: { src: '', anim: 'idle', size: 100, gC: '#ff0055', gP: 0, speed: 3 }, // src stores File or URL string
                 timer: 5, timerOn: true,
                 imageQuality: 0.8, // New: for image compression
                 titleScreen: { // New: for title screen customization
@@ -306,6 +306,7 @@
                 this.updatePreview();
                 this.renderLocationList(); // Ensure initial list is rendered
                 this.setTitleBgMode(this.data.titleScreen.mode); // Initialize title screen mode
+                document.getElementById('val_img_quality').innerText = this.data.imageQuality;
             },
 
             // Helper to process and compress images
@@ -380,14 +381,17 @@
                 document.querySelector('#quest-editor-panel #b_choice').className = t === 'choice' ? 'sub-tab-link active' : 'sub-tab-link';
                 document.querySelector('#quest-editor-panel #b_input').className = t === 'input' ? 'sub-tab-link active' : 'sub-tab-link';
                 document.querySelector('#quest-editor-panel #area_choice').style.display = t === 'choice' ? 'block' : 'none';
-                document.querySelector('#quest-editor-panel #area_input').style.display = t === 'input' ? 'block' : 'none';
+                document.getElementById('area_input').style.display = t === 'input' ? 'block' : 'none';
             },
 
             setGameLang(l) {
                 this.gameLang = l;
                 const btnContainer = document.querySelector('#sec_quests .sub-tabs');
-                btnContainer.children[0].classList.toggle('active', l === 'ru');
-                btnContainer.children[1].classList.toggle('active', l === 'en');
+                // Check if btnContainer exists and has children before accessing them
+                if (btnContainer && btnContainer.children.length > 0) {
+                    btnContainer.children[0].classList.toggle('active', l === 'ru');
+                    btnContainer.children[1].classList.toggle('active', l === 'en');
+                }
                 document.getElementById('lang_ru_fields').style.display = l === 'ru' ? 'block' : 'none';
                 document.getElementById('lang_en_fields').style.display = l === 'en' ? 'block' : 'none';
             },
@@ -413,30 +417,33 @@
 
             // Handle image source (file or URL) for characters
             handleImageSource(source, target) {
-                if (source) {
+                let displaySource = '';
+                if (source instanceof File) {
                     this.data[target].src = source;
-                    this.data[target].srcType = typeof source === 'string' ? 'url' : 'file';
-                    const fileName = typeof source === 'string' ? source.substring(source.lastIndexOf('/') + 1) : source.name;
-                    document.getElementById(target.charAt(0) + '_img_name').textContent = 'Файл/URL: ' + fileName;
+                    displaySource = source.name;
+                } else if (typeof source === 'string' && source.trim() !== '') {
+                    this.data[target].src = source.trim();
+                    displaySource = source.substring(source.lastIndexOf('/') + 1) || source.trim();
                 } else {
                     this.data[target].src = '';
-                    this.data[target].srcType = 'none';
-                    document.getElementById(target.charAt(0) + '_img_name').textContent = '';
                 }
+                document.getElementById(target.charAt(0) + '_img_name').textContent = displaySource ? 'Файл/URL: ' + displaySource : '';
                 this.updatePreview();
             },
 
             // Handle title screen background source (file or URL)
             handleTitleBgSource(source) {
-                if (source) {
+                let displaySource = '';
+                if (source instanceof File) {
                     this.data.titleScreen.customBgSource = source;
-                    this.data.titleScreen.customBgFileName = typeof source === 'string' ? source.substring(source.lastIndexOf('/') + 1) : source.name;
-                    document.getElementById('title_bg_name').textContent = 'Файл/URL: ' + this.data.titleScreen.customBgFileName;
+                    displaySource = source.name;
+                } else if (typeof source === 'string' && source.trim() !== '') {
+                    this.data.titleScreen.customBgSource = source.trim();
+                    displaySource = source.substring(source.lastIndexOf('/') + 1) || source.trim();
                 } else {
                     this.data.titleScreen.customBgSource = '';
-                    this.data.titleScreen.customBgFileName = '';
-                    document.getElementById('title_bg_name').textContent = '';
                 }
+                document.getElementById('title_bg_name').textContent = displaySource ? 'Файл/URL: ' + displaySource : '';
             },
 
             handleLocations(files) {
@@ -448,7 +455,7 @@
 
             addLocationUrl(url) {
                 if (url && url.trim() !== '') {
-                    this.locations.push({ name: url.substring(url.lastIndexOf('/') + 1), source: url.trim() });
+                    this.locations.push({ name: url.substring(url.lastIndexOf('/') + 1) || url.trim(), source: url.trim() });
                     document.getElementById('i_loc_url_input').value = ''; // Clear input
                     this.renderLocationList();
                 }
@@ -480,6 +487,9 @@
                         document.getElementById('music_name').textContent = 'Файл: ' + file.name;
                     };
                     r.readAsDataURL(file);
+                } else {
+                    this.musicFile = null;
+                    document.getElementById('music_name').textContent = '';
                 }
             },
 
@@ -487,6 +497,9 @@
                 // Character image uploads
                 document.getElementById('f_hero').onchange = e => this.handleImageSource(e.target.files[0], 'hero');
                 document.getElementById('f_boss').onchange = e => this.handleImageSource(e.target.files[0], 'boss');
+                document.getElementById('i_h_src_url').oninput = e => { if (!e.target.value) this.handleImageSource('', 'hero'); };
+                document.getElementById('i_b_src_url').oninput = e => { if (!e.target.value) this.handleImageSource('', 'boss'); };
+
 
                 // Locations upload
                 document.getElementById('f_loc').onchange = e => this.handleLocations(e.target.files);
@@ -513,13 +526,13 @@
                 document.getElementById('r_img_quality').oninput = e => {
                     this.data.imageQuality = parseFloat(e.target.value);
                     document.getElementById('val_img_quality').innerText = e.target.value;
-                    // Re-render characters in preview with new quality (will be applied in generate)
                     // For preview, we just update char images to trigger re-rendering without full re-processing
                     this.updatePreview();
                 };
 
                 // Title Screen settings
                 document.getElementById('f_title_bg').onchange = e => this.handleTitleBgSource(e.target.files[0]);
+                document.getElementById('i_title_bg_url_input').oninput = e => { if (!e.target.value) this.handleTitleBgSource(''); };
                 document.getElementById('c_title_bg_color').oninput = e => { this.data.titleScreen.customBgColor = e.target.value; };
                 document.getElementById('c_title_text_color').oninput = e => { this.data.titleScreen.titleColor = e.target.value; };
                 document.getElementById('c_play_btn_bg').oninput = e => { this.data.titleScreen.buttonBg = e.target.value; };
@@ -556,6 +569,10 @@
                     // Combine correct and wrongs for textarea
                     const answersText = [q.correct, ...q.wrongs.filter(w => w)].join(' | ');
                     document.getElementById('i_q_answers').value = answersText;
+                    // Clear old inputs just in case
+                    document.getElementById('i_c_ans').value = '';
+                    document.getElementById('i_w1').value = '';
+                    document.getElementById('i_w2').value = '';
                 } else {
                     document.getElementById('i_in_ans').value = q.correctInp;
                 }
@@ -619,17 +636,22 @@
             updatePreview() {
                 const h = this.data.hero;
                 const b = this.data.boss;
-                const imgQuality = this.data.imageQuality;
+                // const imgQuality = this.data.imageQuality; // Not directly used in live preview, only for final generation
 
                 // Update character images in preview (without full compression, just the source)
                 // The actual compression happens in generate()
-                document.getElementById('img_hero').src = typeof h.src === 'string' ? h.src : (h.src ? URL.createObjectURL(h.src) : '');
-                document.getElementById('img_boss').src = typeof b.src === 'string' ? b.src : (b.src ? URL.createObjectURL(b.src) : '');
+                const getSrcForPreview = (source) => {
+                    if (!source) return '';
+                    if (source instanceof File) return URL.createObjectURL(source);
+                    return source; // Assume it's a URL string
+                };
+
+                document.getElementById('img_hero').src = getSrcForPreview(h.src);
+                document.getElementById('img_boss').src = getSrcForPreview(b.src);
+
 
                 // Update stage background with first location (if any)
-                document.getElementById('stage_bg').style.backgroundImage = this.locations.length > 0 ? `url(${
-                    typeof this.locations[0].source === 'string' ? this.locations[0].source : URL.createObjectURL(this.locations[0].source)
-                })` : 'none';
+                document.getElementById('stage_bg').style.backgroundImage = this.locations.length > 0 ? `url(${getSrcForPreview(this.locations[0].source)})` : 'none';
 
                 document.getElementById('p_h_name').innerText = document.getElementById('i_h_name').value;
                 document.getElementById('p_b_name').innerText = document.getElementById('i_b_name').value;
@@ -700,8 +722,13 @@
                 const processedHeroSrc = await this.processAndCompressImage(d.hero.src, quality);
                 const processedBossSrc = await this.processAndCompressImage(d.boss.src, quality);
                 const processedLocations = await Promise.all(this.locations.map(loc => this.processAndCompressImage(loc.source, quality)));
-                const processedTitleBg = await this.processAndCompressImage(d.titleScreen.customBgSource, quality);
                 const processedMusicData = this.musicFile ? this.musicFile.data : null; // Music is already dataURL or URL
+
+                let processedTitleBg = '';
+                if (d.titleScreen.mode === 'custom' && d.titleScreen.customBgSource) {
+                    processedTitleBg = await this.processAndCompressImage(d.titleScreen.customBgSource, quality);
+                }
+
 
                 const getAnimRule = o => {
                     if (o.anim === 'none') return '';
@@ -709,27 +736,21 @@
                     if (['shake', 'wobble'].includes(o.anim)) dur *= .5;
                     let timing = 'ease-in-out';
                     if (['glitch'].includes(o.anim)) timing = `steps(${Math.round(dur * 10)})`;
-                    if (['shake', 'spin', 'flip'].includes(d.anim)) timing = 'linear';
+                    if (['shake', 'spin', 'flip'].includes(o.anim)) timing = 'linear'; // Fix: use o.anim
                     return `animation:fx-${o.anim} ${dur}s infinite ${timing};transform-origin:${o.anim === 'swing' ? 'top center' : 'center'};`;
                 };
                 const hStyle = `width:${d.hero.size}%;filter:${d.hero.gP > 0 ? `drop-shadow(0 0 ${d.hero.gP}px ${d.hero.gC})` : ''};${getAnimRule(d.hero)}`;
                 const bStyle = `width:${d.boss.size}%;filter:${d.boss.gP > 0 ? `drop-shadow(0 0 ${d.boss.gP}px ${d.boss.gC})` : ''};${getAnimRule(d.boss)}`;
 
                 // Title Screen Styles
-                let titleBgStyle = `background-color: ${d.titleScreen.customBgColor};`;
+                let titleBgImageCss = 'none';
                 if (d.titleScreen.mode === 'custom' && processedTitleBg) {
-                    titleBgStyle += `background-image: url(${processedTitleBg}); background-size: cover; background-position: center;`;
-                } else {
-                    // Default background, or no custom if 'custom' selected but no image. Use fallback transparent image.
-                    titleBgStyle += `background-image: url(${d.titleScreen.defaultBgData});`;
+                    titleBgImageCss = `url(${processedTitleBg})`;
+                } else if (d.titleScreen.mode === 'default') {
+                    titleBgImageCss = `url(${d.titleScreen.defaultBgData})`; // Use a tiny transparent image for default to ensure background color shows
                 }
+                 const titleScreenBackgroundColor = d.titleScreen.customBgColor;
 
-                const titleStyles = `
-                    .overlay { ${titleBgStyle} }
-                    .big-title { color: ${d.titleScreen.titleColor}; }
-                    .play-btn { background: ${d.titleScreen.buttonBg}; color: ${d.titleScreen.buttonText}; border-color: ${d.titleScreen.buttonBg}; }
-                    .play-btn:hover { background: ${d.titleScreen.buttonBg}; color: ${d.titleScreen.buttonText}; border-color: ${d.titleScreen.buttonBg}; box-shadow:0 0 30px ${d.titleScreen.buttonBg}; filter: brightness(1.2); }
-                `;
 
                 const script = `<script>
 let timerVal=${d.timer * 60},timerOn=${d.timerOn},audioCtx=null,currentQIndex=-1,locIndex=0,isAnswered=false,battleState=50, isGameOver=false;
@@ -757,10 +778,10 @@ body{margin:0;overflow:hidden;font-family:'Rajdhani',sans-serif;user-select:none
 @keyframes float-up-fade { 0% { transform: translateY(0) scale(0.8); opacity: 1; } 100% { transform: translateY(-60px) scale(1.2); opacity: 0; } }
 @keyframes fx-idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes fx-float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-15px) rotate(2deg)}}@keyframes fx-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}@keyframes fx-shake{0%{transform:translate(1px, 1px)}20%{transform:translate(-3px, 0px)}40%{transform:translate(1px, -1px)}60%{transform:translate(-3px, 1px)}80%{transform:translate(-1px, -1px)}100%{transform:translate(1px, -2px)}}@keyframes fx-glitch{0%{transform:translate(0)}20%{transform:translate(-2px, 2px)}40%{transform:translate(-2px, -2px)}60%{transform:translate(2px, 2px)}80%{transform:translate(2px, -2px)}100%{transform:translate(0)}}@keyframes fx-spin{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}@keyframes fx-neon{0%,100%{opacity:1;filter:brightness(1)}50%{opacity:0.8;filter:brightness(1.5)}}@keyframes fx-wobble{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}@keyframes fx-swing{0%{transform:rotate(0deg)}20%{transform:rotate(15deg)}40%{transform:rotate(-10deg)}60%{transform:rotate(5deg)}80%{transform:rotate(-5deg)}100%{transform:rotate(0deg)}}@keyframes fx-bounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-30px)}60%{transform:translateY(-15px)}}@keyframes fx-flip{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}@keyframes fx-ghost{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.05)}}
 .scene{display:flex;flex-direction:column;height:100vh;justify-content:space-between;position:relative;opacity:0;transition:opacity 0.5s;background-image:linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3));}
-.overlay{position:fixed;inset:0;background:#12101E;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.big-title{font-family:'Press Start 2P',cursive;font-size:clamp(24px,5vw,40px);color:#00e5ff;text-align:center;margin-bottom:40px;text-shadow:4px 4px 0 var(--primary);line-height:1.5;}
-.play-btn{background:transparent;color:#fff;padding:15px 50px;border:2px solid #fff;border-radius:50px;font-size:24px;font-weight:900;cursor:pointer;transition:0.3s;animation:fx-pulse 2s infinite;}
-.play-btn:hover{background:#00e5ff;color:#000;border-color:#00e5ff;box-shadow:0 0 30px #00e5ff;}
+.overlay{position:fixed;inset:0;background-color:${titleScreenBackgroundColor};background-image:${titleBgImageCss};background-size:cover;background-position:center;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.big-title{font-family:'Press Start 2P',cursive;font-size:clamp(24px,5vw,40px);color:${d.titleScreen.titleColor};text-align:center;margin-bottom:40px;text-shadow:4px 4px 0 var(--primary);line-height:1.5;}
+.play-btn{background:${d.titleScreen.buttonBg};color:${d.titleScreen.buttonText};padding:15px 50px;border:2px solid ${d.titleScreen.buttonBg};border-radius:50px;font-size:24px;font-weight:900;cursor:pointer;transition:0.3s;animation:fx-pulse 2s infinite;}
+.play-btn:hover{background:${d.titleScreen.buttonBg};color:${d.titleScreen.buttonText};border-color:${d.titleScreen.buttonBg};box-shadow:0 0 30px ${d.titleScreen.buttonBg};filter:brightness(1.2);}
 .hud{padding:10px 15px;display:flex;justify-content:space-between;align-items:flex-start;width:100%;z-index:10;gap:10px;}
 .ui-element { background:rgba(35,31,52,0.8); border-radius: 20px; box-shadow: 0 0 10px var(--primary), inset 0 0 8px rgba(0,0,0,0.5); padding: 8px;}
 .player-info { display:flex; align-items: center; gap: 10px; flex: 1; max-width: 350px;}
@@ -788,7 +809,6 @@ body{margin:0;overflow:hidden;font-family:'Rajdhani',sans-serif;user-select:none
 .inp-row{display:flex;gap:10px;}
 input[type=text]{padding:15px;border-radius:6px;border:2px solid #fff;font-family:inherit;font-weight:700;background:#000;color:#fff;font-size:18px;outline:none; transition: 0.3s;}
 .correct-answer-hint { color: var(--green); margin-top: 5px; font-size: 16px; font-weight: 700; }
-${titleStyles}
 </style></head><body>
 ${processedMusicData ? `<audio id="bg-music" src="${processedMusicData}" loop></audio>` : ''}
 <div id="projectile"></div>
