@@ -465,7 +465,14 @@ function checkInput(){if(isAnswered)return;isAnswered=true;const i=document.getE
 function handleCorrect(el){document.body.style.pointerEvents='none';animateAttack('hero-wrap','boss-wrap','var(--green)','+100');if(el.tagName==='BUTTON'){el.style.background='var(--green)';el.style.color='#000';}else{el.style.borderColor='var(--green)';}setTimeout(()=>{battleState=Math.min(100,battleState+step);updatePositionsAndProgress();document.body.style.pointerEvents='';if(battleState<100)loadNextQuestion();},1000);}
 function handleWrong(el){document.body.style.pointerEvents='none';animateAttack('boss-wrap','hero-wrap','var(--red)','+100');if(el.tagName==='BUTTON'){el.style.background='var(--red)';}else{el.style.borderColor='var(--red)';}setTimeout(()=>{battleState=Math.max(0,battleState-step);updatePositionsAndProgress();document.body.style.pointerEvents='';if(battleState>0)loadNextQuestion();},1000);}
 function endGame(didWin){if(isGameOver)return;isGameOver=true;document.body.style.pointerEvents='none';if(document.getElementById('timer-wrap')) document.getElementById('timer-wrap').style.display='none';const p=document.getElementById('q-panel');p.innerHTML="";let msg,color,winnerImg, winnerId;if(didWin===true){msg=langPack.win;color='var(--green)';document.getElementById('boss-img').style.opacity='0';winnerImg=document.getElementById('hero-img');winnerId='hero-wrap';}else{msg=langPack.lose;color='var(--red)';document.getElementById('hero-img').style.opacity='0';winnerImg=document.getElementById('boss-img');winnerId='boss-wrap';}if(winnerImg){winnerImg.style.animation='fx-bounce 1s ease-in-out infinite';showScore(winnerId, '+1000', 'var(--green)');}p.innerHTML=\`<h2 style='font-size:40px;color:\${color};text-shadow:0 0 20px \${color}'>\${msg}</h2>\`;}
-${!d.titleScreenOn ? "window.addEventListener('message', e => { if (e.data === 'start') startGame(); }, { once: true });" : ""}
+function initGame() {
+    if (${!d.titleScreenOn}) {
+        // Если титульного экрана нет, игра должна запускаться по клику пользователя, чтобы обойти политику автозапуска аудио.
+        document.body.addEventListener('click', startGame, { once: true });
+    }
+    // Если титульный экран есть, кнопка "ИГРАТЬ" вызовет startGame(), поэтому здесь ничего делать не нужно.
+}
+document.addEventListener('DOMContentLoaded', initGame);
 <\/script>`;
             const html=`<!DOCTYPE html><html><head><style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@700&family=Montserrat:wght@900&display=swap');
