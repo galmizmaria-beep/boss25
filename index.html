@@ -408,9 +408,22 @@ function startGame(){
     initAudio();
     ${d.titleScreenOn ? "document.getElementById('start-overlay').style.display='none';" : ""}
     document.getElementById('game-root').style.opacity='1';
-    const music=document.getElementById('bg-music');
-    if(music){music.volume=0.3;music.play().catch(e=>console.log("Autoplay blocked"));const muteBtn=document.getElementById('mute-btn');const pauseBtn=document.getElementById('pause-btn');muteBtn.onclick=()=>{music.muted=!music.muted;muteBtn.innerText=music.muted?'🔇':'🔊';};pauseBtn.onclick=()=>{if(music.paused){music.play();pauseBtn.innerText='⏸️';}else{music.pause();pauseBtn.innerText='▶️';}};}
-    if(timerOn)startTimer();
+    const music = document.getElementById('bg-music');
+    if (music) {
+        music.volume = 0.3;
+        let playAttempt = music.play();
+        if (playAttempt !== undefined) {
+            playAttempt.catch(error => {
+                console.log('Autoplay was prevented. Waiting for user interaction to start music.');
+                document.body.addEventListener('click', () => music.play(), { once: true });
+            });
+        }
+        const muteBtn = document.getElementById('mute-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        if(muteBtn) muteBtn.onclick = () => { music.muted = !music.muted; muteBtn.innerText = music.muted ? '🔇' : '🔊'; };
+        if(pauseBtn) pauseBtn.onclick = () => { if (music.paused) { music.play(); pauseBtn.innerText = '⏸️'; } else { music.pause(); pauseBtn.innerText = '▶️'; } };
+    }
+    if (timerOn) startTimer();
     loadNextQuestion();
 }
 function startTimer(){const e=document.getElementById('timer-disp');const i=setInterval(()=>{if(isGameOver){clearInterval(i);return;}timerVal--;let m=Math.floor(timerVal/60);let s=timerVal%60;e.innerText=(m<10?'0'+m:m)+':'+(s<10?'0'+s:s);if(timerVal<=0){clearInterval(i);endGame(battleState>50);}},1000);}
