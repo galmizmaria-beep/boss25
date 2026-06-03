@@ -399,80 +399,34 @@
             const generatedOverlay = d.titleScreenOn ? `<div class="overlay" id="start-overlay"><div class="big-title">${langData[this.gameLang].title.replace(/\|/g, '<br>')}</div><button class="play-btn" onclick="startGame()"> ${langData[this.gameLang].play}</button></div>` : '';
 
             const script=`<script>
-let timerVal=${d.timer*60},timerOn=${d.timerOn},audioCtx=null,currentQIndex=-1,locIndex=0,isAnswered=false,battleState=50, isGameOver=false;
+let timerVal=${d.timer*60},timerOn=${d.timerOn},audioCtx=null,currentQIndex=-1,locIndex=0,isAnswered=false,battleState=50,isGameOver=false,gameStarted=false;
 const quests=${JSON.stringify(this.quests)},locations=${JSON.stringify(this.locations.map(l=>l.data))},langPack=${JSON.stringify(langData[this.gameLang])};
 const step=50/((quests.length||1));
 function initAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();}
 function beep(type){if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);if(type==='win'){o.frequency.value=600;o.type='sine';g.gain.setValueAtTime(0.1,audioCtx.currentTime);o.start();o.frequency.exponentialRampToValueAtTime(1200,audioCtx.currentTime+0.1);g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.3);o.stop(audioCtx.currentTime+0.3);}else if(type==='fail'){o.frequency.value=150;o.type='sawtooth';g.gain.setValueAtTime(0.1,audioCtx.currentTime);o.start();g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.4);o.stop(audioCtx.currentTime+0.4);}else if(type==='hit'){o.frequency.setValueAtTime(400,audioCtx.currentTime);o.type='square';g.gain.setValueAtTime(0.1,audioCtx.currentTime);o.start();o.frequency.exponentialRampToValueAtTime(100,audioCtx.currentTime+0.2);g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.2);o.stop(audioCtx.currentTime+0.3);}}
-function startGame(){
-    initAudio();
-    ${d.titleScreenOn ? "document.getElementById('start-overlay').style.display='none';" : ""}
-    document.getElementById('game-root').style.opacity='1';
-    const music = document.getElementById('bg-music');
-    if (music) {
-        music.volume = 0.3;
-        let playAttempt = music.play();
-        if (playAttempt !== undefined) {
-            playAttempt.catch(error => {
-                console.log('Autoplay was prevented. Waiting for user interaction to start music.');
-                document.body.addEventListener('click', () => music.play(), { once: true });
-            });
-        }
-        const muteBtn = document.getElementById('mute-btn');
-        const pauseBtn = document.getElementById('pause-btn');
-        if(muteBtn) muteBtn.onclick = () => { music.muted = !music.muted; muteBtn.innerText = music.muted ? '🔇' : '🔊'; };
-        if(pauseBtn) pauseBtn.onclick = () => { if (music.paused) { music.play(); pauseBtn.innerText = '⏸️'; } else { music.pause(); pauseBtn.innerText = '▶️'; } };
-    }
-    if (timerOn) startTimer();
-    loadNextQuestion();
-}
-function startTimer(){const e=document.getElementById('timer-disp');const i=setInterval(()=>{if(isGameOver){clearInterval(i);return;}timerVal--;let m=Math.floor(timerVal/60);let s=timerVal%60;e.innerText=(m<10?'0'+m:m)+':'+(s<10?'0'+s:s);if(timerVal<=0){clearInterval(i);endGame(battleState>50);}},1000);}
+function activateGame(){if(gameStarted)return;gameStarted=true;initAudio();const music=document.getElementById('bg-music');if(music){music.volume=0.3;let playAttempt=music.play();if(playAttempt!==undefined){playAttempt.catch(error=>{console.log('Autoplay was prevented. User interaction required.');});}
+const muteBtn=document.getElementById('mute-btn');const pauseBtn=document.getElementById('pause-btn');if(muteBtn)muteBtn.onclick=()=>{music.muted=!music.muted;muteBtn.innerText=music.muted?'🔇':'🔊';};if(pauseBtn)pauseBtn.onclick=()=>{if(music.paused){music.play();pauseBtn.innerText='⏸️';}else{music.pause();pauseBtn.innerText='▶️';}};}
+if(timerOn)startTimer();}
+function startGame(){${d.titleScreenOn?"document.getElementById('start-overlay').style.display='none';":""}
+document.getElementById('game-root').style.opacity='1';activateGame();loadNextQuestion();}
+function startTimer(){const e=document.getElementById('timer-disp');const i=setInterval(()=>{if(isGameOver){clearInterval(i);return;}
+timerVal--;let m=Math.floor(timerVal/60);let s=timerVal%60;e.innerText=(m<10?'0'+m:m)+':'+(s<10?'0'+s:s);if(timerVal<=0){clearInterval(i);endGame(battleState>50);}},1000);}
 function updatePositionsAndProgress(){const heroWrap=document.getElementById('hero-wrap');const bossWrap=document.getElementById('boss-wrap');const barH=document.getElementById('bar-h');const barB=document.getElementById('bar-b');const heroAdvantage=battleState-50;const heroMove=Math.max(0,heroAdvantage)*2;const bossMove=Math.max(0,-heroAdvantage)*2;heroWrap.style.transform=\`translateX(\${heroMove}%)\`;bossWrap.style.transform=\`translateX(-\${bossMove}%)\`;barH.style.width=\`\${battleState}%\`;barB.style.width=\`\${100-battleState}%\`;if(battleState>=100)endGame(true);else if(battleState<=0)endGame(false);}
-function loadNextQuestion(){isAnswered=false;currentQIndex++;const isGameEnd=currentQIndex>=quests.length;if(isGameEnd){endGame(battleState>50);return;}if(locations.length>0&&currentQIndex>0){locIndex=(locIndex+1)%locations.length;document.body.style.backgroundImage=\`url(\${locations[locIndex]})\`;}const q=quests[currentQIndex];document.getElementById('q-text').innerText=q.text;const p=document.getElementById('q-inputs');let html='';if(q.type==='choice'){const ans=[{t:q.correct,c:true}];q.wrongs.forEach(w=>{if(w)ans.push({t:w,c:false});});ans.sort(()=>Math.random()-0.5);html=\`<div class="btns">\${ans.map(a=>\`<button data-correct="\${a.c}" class="game-btn" onclick="checkChoice(this,\${a.c})">\${a.t}</button>\`).join('')}</div>\`;}else{html=\`<div class="inp-area"><div class="inp-row"><input type="text" id="inp-ans" placeholder="..." autocomplete="off"><button class="game-btn" onclick="checkInput()">OK</button></div></div>\`;}p.innerHTML=html;}
+function loadNextQuestion(){isAnswered=false;currentQIndex++;const isGameEnd=currentQIndex>=quests.length;if(isGameEnd){endGame(battleState>50);return;}
+if(locations.length>0&&currentQIndex>0){locIndex=(locIndex+1)%locations.length;document.body.style.backgroundImage=\`url(\${locations[locIndex]})\`;}
+const q=quests[currentQIndex];document.getElementById('q-text').innerText=q.text;const p=document.getElementById('q-inputs');let html='';if(q.type==='choice'){const ans=[{t:q.correct,c:true}];q.wrongs.forEach(w=>{if(w)ans.push({t:w,c:false});});ans.sort(()=>Math.random()-0.5);html=\`<div class="btns">\${ans.map(a=>\`<button data-correct="\${a.c}" class="game-btn" onclick="checkChoice(this,\${a.c})">\${a.t}</button>\`).join('')}</div>\`;}else{html=\`<div class="inp-area"><div class="inp-row"><input type="text" id="inp-ans" placeholder="..." autocomplete="off"><button class="game-btn" onclick="checkInput()">OK</button></div></div>\`;}
+p.innerHTML=html;}
 function showScore(targetId,text,color){const scorePopup=document.getElementById(targetId.replace('-wrap','-score-popup'));const targetEl=document.getElementById(targetId);const targetRect=targetEl.getBoundingClientRect();scorePopup.innerText=text;scorePopup.style.color=color;scorePopup.style.textShadow=\`0 0 10px \${color}\`;scorePopup.style.left=targetRect.left+targetRect.width/2+'px';scorePopup.style.top=targetRect.top-20+'px';scorePopup.classList.add('show');setTimeout(()=>{scorePopup.classList.remove('show');},1000);}
-function animateAttack(attackerId,targetId,color, scoreText){
-    const projectile=document.getElementById('projectile');
-    const attacker=document.getElementById(attackerId);
-    const target=document.getElementById(targetId);
-    const targetImg=document.getElementById(targetId.replace('-wrap','-img'));
-    const battleGround=document.querySelector('.battle-ground');
-    const startCharRect=attacker.getBoundingClientRect();
-    const targetCharRect=target.getBoundingClientRect();
-    const battleGroundRect=battleGround.getBoundingClientRect();
-    const startX=(startCharRect.left+startCharRect.width/2)-battleGroundRect.left;
-    const startY=(startCharRect.top+startCharRect.height/2)-battleGroundRect.top;
-    const endX=(targetCharRect.left+targetCharRect.width/2)-battleGroundRect.left;
-    const endY=(targetCharRect.top+targetCharRect.height/2)-battleGroundRect.top;
-    projectile.style.background=color;
-    projectile.style.boxShadow=\`0 0 15px \${color}, 0 0 25px \${color}\`;
-    projectile.style.left=startX+'px';
-    projectile.style.top=startY+'px';
-    projectile.style.opacity='1';
-    projectile.style.transform='scale(1)';
-    setTimeout(()=>{projectile.style.left=endX+'px';projectile.style.top=endY+'px';}, 10);
-    setTimeout(()=>{
-        beep('hit');
-        projectile.style.transform='scale(3)';
-        projectile.style.opacity='0';
-        targetImg.style.animation='fx-shake 0.4s';
-        targetImg.style.filter=\`drop-shadow(0 0 25px \${color})\`;
-        showScore(attackerId,scoreText, 'var(--green)');
-        setTimeout(()=>{targetImg.style.animation='';targetImg.style.filter='';},400);
-    },550);
-}
-function checkChoice(b,isCor){if(isAnswered)return;isAnswered=true;document.querySelectorAll('.btns .game-btn').forEach(btn=>btn.disabled=true);if(isCor){handleCorrect(b);}else{handleWrong(b);const correctBtn=document.querySelector('.game-btn[data-correct=\\"true\\"]');if(correctBtn)correctBtn.style.background='var(--green)';}}
-function checkInput(){if(isAnswered)return;isAnswered=true;const i=document.getElementById('inp-ans');i.disabled=true;document.querySelector('.inp-area .game-btn').disabled=true;if(i.value.trim().toLowerCase()===(quests[currentQIndex].correctInp||'').trim().toLowerCase()){handleCorrect(i);}else{handleWrong(i);const hint=document.createElement('div');hint.className='correct-answer-hint';hint.innerText='Верный ответ: '+quests[currentQIndex].correctInp;i.closest('.inp-area').appendChild(hint);}}
+function animateAttack(attackerId,targetId,color,scoreText){const projectile=document.getElementById('projectile');const attacker=document.getElementById(attackerId);const target=document.getElementById(targetId);const targetImg=document.getElementById(targetId.replace('-wrap','-img'));const battleGround=document.querySelector('.battle-ground');const startCharRect=attacker.getBoundingClientRect();const targetCharRect=target.getBoundingClientRect();const battleGroundRect=battleGround.getBoundingClientRect();const startX=(startCharRect.left+startCharRect.width/2)-battleGroundRect.left;const startY=(startCharRect.top+startCharRect.height/2)-battleGroundRect.top;const endX=(targetCharRect.left+targetCharRect.width/2)-battleGroundRect.left;const endY=(targetCharRect.top+targetCharRect.height/2)-battleGroundRect.top;projectile.style.background=color;projectile.style.boxShadow=\`0 0 15px \${color}, 0 0 25px \${color}\`;projectile.style.left=startX+'px';projectile.style.top=startY+'px';projectile.style.opacity='1';projectile.style.transform='scale(1)';setTimeout(()=>{projectile.style.left=endX+'px';projectile.style.top=endY+'px';},10);setTimeout(()=>{beep('hit');projectile.style.transform='scale(3)';projectile.style.opacity='0';targetImg.style.animation='fx-shake 0.4s';targetImg.style.filter=\`drop-shadow(0 0 25px \${color})\`;showScore(attackerId,scoreText,'var(--green)');setTimeout(()=>{targetImg.style.animation='';targetImg.style.filter='';},400);},550);}
+function checkChoice(b,isCor){if(!gameStarted)activateGame();if(isAnswered)return;isAnswered=true;document.querySelectorAll('.btns .game-btn').forEach(btn=>btn.disabled=true);if(isCor){handleCorrect(b);}else{handleWrong(b);const correctBtn=document.querySelector('.game-btn[data-correct=\\"true\\"]');if(correctBtn)correctBtn.style.background='var(--green)';}}
+function checkInput(){if(!gameStarted)activateGame();if(isAnswered)return;isAnswered=true;const i=document.getElementById('inp-ans');i.disabled=true;document.querySelector('.inp-area .game-btn').disabled=true;if(i.value.trim().toLowerCase()===(quests[currentQIndex].correctInp||'').trim().toLowerCase()){handleCorrect(i);}else{handleWrong(i);const hint=document.createElement('div');hint.className='correct-answer-hint';hint.innerText='Верный ответ: '+quests[currentQIndex].correctInp;i.closest('.inp-area').appendChild(hint);}}
 function handleCorrect(el){document.body.style.pointerEvents='none';animateAttack('hero-wrap','boss-wrap','var(--green)','+100');if(el.tagName==='BUTTON'){el.style.background='var(--green)';el.style.color='#000';}else{el.style.borderColor='var(--green)';}setTimeout(()=>{battleState=Math.min(100,battleState+step);updatePositionsAndProgress();document.body.style.pointerEvents='';if(battleState<100)loadNextQuestion();},1000);}
 function handleWrong(el){document.body.style.pointerEvents='none';animateAttack('boss-wrap','hero-wrap','var(--red)','+100');if(el.tagName==='BUTTON'){el.style.background='var(--red)';}else{el.style.borderColor='var(--red)';}setTimeout(()=>{battleState=Math.max(0,battleState-step);updatePositionsAndProgress();document.body.style.pointerEvents='';if(battleState>0)loadNextQuestion();},1000);}
-function endGame(didWin){if(isGameOver)return;isGameOver=true;document.body.style.pointerEvents='none';if(document.getElementById('timer-wrap')) document.getElementById('timer-wrap').style.display='none';const p=document.getElementById('q-panel');p.innerHTML="";let msg,color,winnerImg, winnerId;if(didWin===true){msg=langPack.win;color='var(--green)';document.getElementById('boss-img').style.opacity='0';winnerImg=document.getElementById('hero-img');winnerId='hero-wrap';}else{msg=langPack.lose;color='var(--red)';document.getElementById('hero-img').style.opacity='0';winnerImg=document.getElementById('boss-img');winnerId='boss-wrap';}if(winnerImg){winnerImg.style.animation='fx-bounce 1s ease-in-out infinite';showScore(winnerId, '+1000', 'var(--green)');}p.innerHTML=\`<h2 style='font-size:40px;color:\${color};text-shadow:0 0 20px \${color}'>\${msg}</h2>\`;}
-function initGame() {
-    if (${!d.titleScreenOn}) {
-        // Если титульного экрана нет, игра должна запускаться по клику пользователя, чтобы обойти политику автозапуска аудио.
-        document.body.addEventListener('click', startGame, { once: true });
-    }
-    // Если титульный экран есть, кнопка "ИГРАТЬ" вызовет startGame(), поэтому здесь ничего делать не нужно.
-}
-document.addEventListener('DOMContentLoaded', initGame);
+function endGame(didWin){if(isGameOver)return;isGameOver=true;document.body.style.pointerEvents='none';if(document.getElementById('timer-wrap'))document.getElementById('timer-wrap').style.display='none';const p=document.getElementById('q-panel');p.innerHTML="";let msg,color,winnerImg,winnerId;if(didWin===true){msg=langPack.win;color='var(--green)';document.getElementById('boss-img').style.opacity='0';winnerImg=document.getElementById('hero-img');winnerId='hero-wrap';}else{msg=langPack.lose;color='var(--red)';document.getElementById('hero-img').style.opacity='0';winnerImg=document.getElementById('boss-img');winnerId='boss-wrap';}
+if(winnerImg){winnerImg.style.animation='fx-bounce 1s ease-in-out infinite';showScore(winnerId,'+1000','var(--green)');}
+p.innerHTML=\`<h2 style='font-size:40px;color:\${color};text-shadow:0 0 20px \${color}'>\${msg}</h2>\`;}
+function initGame(){if(${d.titleScreenOn}){}else{document.getElementById('game-root').style.opacity='1';loadNextQuestion();}}
+document.addEventListener('DOMContentLoaded',initGame);
 <\/script>`;
             const html=`<!DOCTYPE html><html><head><style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@700&family=Montserrat:wght@900&display=swap');
