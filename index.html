@@ -64,6 +64,7 @@
         .q-dummy-btn.wrong { background-color: var(--red); border-color: var(--red); }
         #quest-editor-panel, #location-list { display: none; }
         .list-item { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 11px; }
+        .list-item > span { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .list-item button { font-size: 10px; padding: 4px 6px; margin-left: 4px; }
         .gen-panel { padding: 15px; border-top: 2px solid #000; background: var(--bg-panel); }
         .btn-generate { background: var(--green); color: #000; padding: 12px 25px; width: 100%; font-size: 14px; font-family: 'Rajdhani', sans-serif; font-weight: 700; text-transform: uppercase; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 0 15px var(--green); transition: 0.3s; }
@@ -326,8 +327,26 @@
             document.getElementById('chk_timer').onchange=e=>{this.data.timerOn=e.target.checked;this.updatePreview();};
             document.getElementById('r_timer').oninput=e=>{this.data.timer=e.target.value;document.getElementById('val_timer').innerText=e.target.value;this.updatePreview();};
         },
-        renderQuestList(){const list=document.getElementById('quest-list');list.innerHTML='';this.quests.forEach((q,i)=>{const item=document.createElement('div');item.className='list-item';item.innerHTML=`<span>${i+1}. ${q.text||'Новый вопрос'}</span><div><button class="fx-btn" onclick="app.editQuest(${i})">✏️</button><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteQuest(${i})">🗑️</button></div>`;list.appendChild(item);});this.updatePreview();},
-        addQuest(isFirst=false){const newQ={type:'choice',text:'Сколько будет 2 + 2?',correct:'4',wrongs:['5','22'],correctInp:'4'};this.quests.push(newQ);if(!isFirst)this.renderQuestList();this.editQuest(this.quests.length-1);},
+        renderQuestList(){
+            const list=document.getElementById('quest-list');
+            list.innerHTML='';
+            this.quests.forEach((q,i)=>{
+                const item=document.createElement('div');
+                item.className='list-item';
+                // ИСПРАВЛЕНИЕ #1: Теперь текст в списке заданий тоже рендерится через KaTeX
+                const questTextSpan = document.createElement('span');
+                questTextSpan.innerHTML = `${i+1}. ${this.renderLatex(q.text || 'Новый вопрос')}`;
+                
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.innerHTML = `<button class="fx-btn" onclick="app.editQuest(${i})">✏️</button><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteQuest(${i})">🗑️</button>`;
+
+                item.appendChild(questTextSpan);
+                item.appendChild(buttonsDiv);
+                list.appendChild(item);
+            });
+            this.updatePreview();
+        },
+        addQuest(isFirst=false){const newQ={type:'choice',text:'$a^2+b^2=c^2$',correct:'$c^2$',wrongs:['$a^2$','$b^2$'],correctInp:'c^2'};this.quests.push(newQ);if(!isFirst)this.renderQuestList();this.editQuest(this.quests.length-1);},
         editQuest(index){this.currentQuestIndex=index;const q=this.quests[index];document.getElementById('editor-title').innerText=`ЗАДАНИЕ #${index+1}`;this.setQType(q.type);document.getElementById('i_q_text').value=q.text;document.getElementById('i_c_ans').value=q.correct;document.getElementById('i_w1').value=q.wrongs[0];document.getElementById('i_w2').value=q.wrongs[1];document.getElementById('i_in_ans').value=q.correctInp;document.getElementById('quest-list-container').style.display='none';document.getElementById('quest-editor-panel').style.display='block';},
         saveQuest(){if(this.currentQuestIndex===-1)return;const q=this.quests[this.currentQuestIndex];q.type=document.querySelector('#quest-editor-panel .sub-tab-link.active').id==='b_choice'?'choice':'input';q.text=document.getElementById('i_q_text').value;if(q.type==='choice'){q.correct=document.getElementById('i_c_ans').value;q.wrongs=[document.getElementById('i_w1').value,document.getElementById('i_w2').value];}else{q.correctInp=document.getElementById('i_in_ans').value;}this.previewQuestIndex=this.currentQuestIndex;document.getElementById('quest-list-container').style.display='block';document.getElementById('quest-editor-panel').style.display='none';this.renderQuestList();},
         deleteQuest(index){if(confirm(`Удалить задание #${index+1}?`)){this.quests.splice(index,1);this.previewQuestIndex=0;this.renderQuestList();}},
@@ -338,10 +357,10 @@
             if (typeof katex === 'undefined' || !text) return text;
             return text.replace(/\$\$([\s\S]*?)\$\$|\$([^\$]*?)\$/g, (match, display, inline) => {
                 if (display !== undefined) {
-                    try { return katex.renderToString(display, { displayMode: true, throwOnError: false }); } catch (e) { return match; }
+                    try { return katex.renderToString(display.trim(), { displayMode: true, throwOnError: false }); } catch (e) { return match; }
                 }
                 if (inline !== undefined) {
-                    try { return katex.renderToString(inline, { displayMode: false, throwOnError: false }); } catch (e) { return match; }
+                    try { return katex.renderToString(inline.trim(), { displayMode: false, throwOnError: false }); } catch (e) { return match; }
                 }
                 return match;
             });
@@ -362,8 +381,9 @@
             const qTextElement = document.getElementById('prev_q_text');
             if (this.quests.length > 0) {
                 const prefix = `(${this.previewQuestIndex + 1}/${this.quests.length}) `;
-                const renderedText = this.renderLatex(currentQ.text || '');
-                qTextElement.innerHTML = prefix + renderedText;
+                // ИСПРАВЛЕНИЕ #2: Более надежный способ обновления текста, который предотвращает дублирование
+                qTextElement.textContent = prefix; // Сначала вставляем текст
+                qTextElement.insertAdjacentHTML('beforeend', this.renderLatex(currentQ.text || '')); // Затем добавляем отрендеренный HTML
             } else {
                 qTextElement.innerText = "Настройте задания...";
             }
@@ -434,10 +454,10 @@ function renderKatexText(text) {
     if (typeof katex === 'undefined' || !text) return text;
     return text.replace(/\\$\\$([\\s\\S]*?)\\$\\$|\\$([^\\$]*?)\\$/g, (match, display, inline) => {
         if (display !== undefined) {
-            try { return katex.renderToString(display, { displayMode: true, throwOnError: false }); } catch (e) { return match; }
+            try { return katex.renderToString(display.trim(), { displayMode: true, throwOnError: false }); } catch (e) { return match; }
         }
         if (inline !== undefined) {
-            try { return katex.renderToString(inline, { displayMode: false, throwOnError: false }); } catch (e) { return match; }
+            try { return katex.renderToString(inline.trim(), { displayMode: false, throwOnError: false }); } catch (e) { return match; }
         }
         return match;
     });
@@ -455,7 +475,7 @@ function updatePositionsAndProgress(){const heroWrap=document.getElementById('he
 function loadNextQuestion(){isAnswered=false;currentQIndex++;const isGameEnd=currentQIndex>=quests.length;if(isGameEnd){endGame(battleState>50);return;}
 if(locations.length>0&&currentQIndex>0){locIndex=(locIndex+1)%locations.length;document.body.style.backgroundImage=\`url(\${locations[locIndex]})\`;}
 const q=quests[currentQIndex];
-document.getElementById('q-text').innerHTML=renderKatexText(q.text);
+const qTextEl=document.getElementById('q-text');qTextEl.textContent='('+(currentQIndex+1)+'/'+quests.length+') ';qTextEl.insertAdjacentHTML('beforeend',renderKatexText(q.text));
 const p=document.getElementById('q-inputs');
 p.innerHTML=''; // Explicitly clear previous answers
 if(q.type==='choice'){
