@@ -327,7 +327,7 @@
             document.getElementById('r_timer').oninput=e=>{this.data.timer=e.target.value;document.getElementById('val_timer').innerText=e.target.value;this.updatePreview();};
         },
         renderQuestList(){const list=document.getElementById('quest-list');list.innerHTML='';this.quests.forEach((q,i)=>{const item=document.createElement('div');item.className='list-item';item.innerHTML=`<span>${i+1}. ${q.text||'Новый вопрос'}</span><div><button class="fx-btn" onclick="app.editQuest(${i})">✏️</button><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteQuest(${i})">🗑️</button></div>`;list.appendChild(item);});this.updatePreview();},
-        addQuest(isFirst=false){const newQ={type:'choice',text:'Сколько будет 2 + 2?',correct:'4',wrongs:['5','22'],correctInp:'4'};this.quests.push(newQ);if(!isFirst)this.renderQuestList();this.editQuest(this.quests.length-1);},
+        addQuest(isFirst=false){const newQ={type:'choice',text:'$x^2-9=0$',correct:'$3$',wrongs:['$-3$','$9$'],correctInp:'3'};this.quests.push(newQ);if(!isFirst)this.renderQuestList();this.editQuest(this.quests.length-1);},
         editQuest(index){this.currentQuestIndex=index;const q=this.quests[index];document.getElementById('editor-title').innerText=`ЗАДАНИЕ #${index+1}`;this.setQType(q.type);document.getElementById('i_q_text').value=q.text;document.getElementById('i_c_ans').value=q.correct;document.getElementById('i_w1').value=q.wrongs[0];document.getElementById('i_w2').value=q.wrongs[1];document.getElementById('i_in_ans').value=q.correctInp;document.getElementById('quest-list-container').style.display='none';document.getElementById('quest-editor-panel').style.display='block';},
         saveQuest(){if(this.currentQuestIndex===-1)return;const q=this.quests[this.currentQuestIndex];q.type=document.querySelector('#quest-editor-panel .sub-tab-link.active').id==='b_choice'?'choice':'input';q.text=document.getElementById('i_q_text').value;if(q.type==='choice'){q.correct=document.getElementById('i_c_ans').value;q.wrongs=[document.getElementById('i_w1').value,document.getElementById('i_w2').value];}else{q.correctInp=document.getElementById('i_in_ans').value;}this.previewQuestIndex=this.currentQuestIndex;document.getElementById('quest-list-container').style.display='block';document.getElementById('quest-editor-panel').style.display='none';this.renderQuestList();},
         deleteQuest(index){if(confirm(`Удалить задание #${index+1}?`)){this.quests.splice(index,1);this.previewQuestIndex=0;this.renderQuestList();}},
@@ -352,32 +352,13 @@
             
             const currentQ=this.quests[this.previewQuestIndex]||{text:'Настройте задания...'};
             
-            // --- START OF FIX ---
             const qTextElement = document.getElementById('prev_q_text');
-            qTextElement.innerHTML = ''; // Очищаем предыдущее содержимое
-
             if (this.quests.length > 0) {
-                const prefix = `(${this.previewQuestIndex+1}/${this.quests.length}) `;
-                qTextElement.appendChild(document.createTextNode(prefix)); // Добавляем префикс как обычный текст
-
-                const questionSpan = document.createElement('span');
-                qTextElement.appendChild(questionSpan);
-
-                // Рендерим текст вопроса с помощью KaTeX в этот span
-                if (typeof katex !== 'undefined' && currentQ.text) {
-                    try {
-                        katex.render(currentQ.text, questionSpan, { throwOnError: false, displayMode: false });
-                    } catch (e) {
-                        console.error("Katex rendering failed:", e);
-                        questionSpan.innerText = currentQ.text; // В случае ошибки показываем обычный текст
-                    }
-                } else {
-                    questionSpan.innerText = currentQ.text || ''; // Если KaTeX недоступен или нет текста
-                }
+                const fullText = `(${this.previewQuestIndex + 1}/${this.quests.length}) ${currentQ.text}`;
+                qTextElement.innerHTML = this.renderLatex(fullText);
             } else {
                 qTextElement.innerText = "Настройте задания...";
             }
-            // --- END OF FIX ---
 
             const btnsDiv=document.getElementById('prev_q_btns');
             btnsDiv.innerHTML='';
@@ -443,15 +424,13 @@ const quests=${JSON.stringify(this.quests)},locations=${JSON.stringify(this.loca
 const step=50/((quests.length||1));
 function renderKatexText(text) {
     if (typeof katex === 'undefined' || !text) return text;
-    // This regex looks for $$...$$ or $...$ and replaces it. It's safer than splitting.
-    // It handles multiple formulas in one string correctly.
     return text.replace(/\\$\\$([\\s\\S]*?)\\$\\$|\\$([\\s\\S]*?)\\$/g, (match, display, inline) => {
         const formula = display || inline;
         const isDisplay = !!display;
         try {
             return katex.renderToString(formula, { displayMode: isDisplay, throwOnError: false });
         } catch (e) {
-            return match; // On error, return the original text ($...$)
+            return match; 
         }
     });
 }
@@ -470,7 +449,7 @@ if(locations.length>0&&currentQIndex>0){locIndex=(locIndex+1)%locations.length;d
 const q=quests[currentQIndex];
 document.getElementById('q-text').innerHTML=renderKatexText(q.text);
 const p=document.getElementById('q-inputs');
-p.innerHTML=''; // Explicitly clear previous answers
+p.innerHTML='';
 if(q.type==='choice'){
     const ans=[{t:q.correct,c:true}];
     q.wrongs.forEach(w=>{if(w)ans.push({t:w,c:false});});
