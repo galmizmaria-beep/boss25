@@ -187,6 +187,7 @@
             this.renderAnims('boss');
             this.bindEvents();
             this.addQuest(true); // Add initial quest with LaTeX example
+            this.renderQuestList(); // Call renderQuestList here to show initial LaTeX question in list
             this.updatePreview();
         },
         setMainTab(t){document.querySelectorAll('.main-tab-link').forEach(e=>e.classList.remove('active'));document.querySelector(`[onclick="app.setMainTab('${t}')"]`).classList.add('active');document.getElementById('sec_chars').classList.toggle('show',t==='chars');document.getElementById('sec_quests').classList.toggle('show',t==='quests');},
@@ -335,12 +336,37 @@
             document.getElementById('chk_timer').onchange=e=>{this.data.timerOn=e.target.checked;this.updatePreview();};
             document.getElementById('r_timer').oninput=e=>{this.data.timer=e.target.value;document.getElementById('val_timer').innerText=e.target.value;this.updatePreview();};
         },
-        renderQuestList(){const list=document.getElementById('quest-list');list.innerHTML='';this.quests.forEach((q,i)=>{const item=document.createElement('div');item.className='list-item';item.innerHTML=`<span>${i+1}. ${q.text||'Новый вопрос'}</span><div><button class="fx-btn" onclick="app.editQuest(${i})">✏️</button><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteQuest(${i})">🗑️</button></div>`;list.appendChild(item);});this.updatePreview();},
+        
+        // --- UPDATED renderQuestList function ---
+        renderQuestList(){
+            const list=document.getElementById('quest-list');
+            list.innerHTML='';
+            this.quests.forEach((q,i)=>{
+                const item=document.createElement('div');
+                item.className='list-item';
+                
+                const textSpan = document.createElement('span'); // Main text container for the list item
+                textSpan.innerText = `${i+1}. `; // Prefix for the question number
+
+                const tempDivForLatex = document.createElement('div');
+                this.renderLatexOrText(tempDivForLatex, q.text || 'Новый вопрос');
+                textSpan.innerHTML += tempDivForLatex.innerHTML; // Append the rendered HTML content
+
+                item.appendChild(textSpan); // Add the span containing number and rendered LaTeX
+                
+                const actionsDiv = document.createElement('div');
+                actionsDiv.innerHTML = `<button class="fx-btn" onclick="app.editQuest(${i})">✏️</button><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteQuest(${i})">🗑️</button>`;
+                item.appendChild(actionsDiv);
+                
+                list.appendChild(item);
+            });
+            list.style.display=this.quests.length>0?'flex':'none';
+            // No need for this.updatePreview() here unless list changes affect stage preview directly
+        },
+        // --- END UPDATED renderQuestList function ---
         
         // Helper function to render LaTeX or plain text
         renderLatexOrText(element, content) {
-            // Check if KaTeX is loaded and if content suggests it's LaTeX
-            // Content suggesting LaTeX: contains '$' or '\' (e.g., \frac, \sqrt)
             if (typeof katex === 'undefined' || !content || (!content.includes('$') && !content.includes('\\'))) {
                 element.innerText = content; // Fallback to plain text
                 return;
@@ -350,7 +376,6 @@
                 let latexToRender = content;
                 let displayMode = false;
 
-                // Strip delimiters for renderToString, determine displayMode
                 if (content.startsWith('$$') && content.endsWith('$$')) {
                     latexToRender = content.substring(2, content.length - 2);
                     displayMode = true;
@@ -358,10 +383,9 @@
                     latexToRender = content.substring(1, content.length - 1);
                     displayMode = false;
                 }
-                // If no explicit delimiters, assume inline mode if it contains LaTeX commands.
-
+                
                 element.innerHTML = katex.renderToString(latexToRender, {
-                    throwOnError: false, // Do not throw, return error HTML
+                    throwOnError: false, 
                     displayMode: displayMode,
                 });
             } catch (e) {
@@ -371,21 +395,34 @@
         },
 
         addQuest(isFirst=false){
-            // Default quest using LaTeX
             const newQ={
                 type:'choice',
                 text:'Сколько будет $\\frac{1}{2} + \\frac{1}{2}$?',
                 correct:'$1$',
                 wrongs:['$0$','$\\frac{1}{4}$'],
-                correctInp:'1' // Correct input for string comparison
+                correctInp:'1' 
             };
             this.quests.push(newQ);
             if(!isFirst)this.renderQuestList();
             this.editQuest(this.quests.length-1);
         },
         editQuest(index){this.currentQuestIndex=index;const q=this.quests[index];document.getElementById('editor-title').innerText=`ЗАДАНИЕ #${index+1}`;this.setQType(q.type);document.getElementById('i_q_text').value=q.text;document.getElementById('i_c_ans').value=q.correct;document.getElementById('i_w1').value=q.wrongs[0];document.getElementById('i_w2').value=q.wrongs[1];document.getElementById('i_in_ans').value=q.correctInp;document.getElementById('quest-list-container').style.display='none';document.getElementById('quest-editor-panel').style.display='block';},
-        saveQuest(){if(this.currentQuestIndex===-1)return;const q=this.quests[this.currentQIndex];q.type=document.querySelector('#quest-editor-panel .sub-tab-link.active').id==='b_choice'?'choice':'input';q.text=document.getElementById('i_q_text').value;if(q.type==='choice'){q.correct=document.getElementById('i_c_ans').value;q.wrongs=[document.getElementById('i_w1').value,document.getElementById('i_w2').value];}else{q.correctInp=document.getElementById('i_in_ans').value;}this.previewQuestIndex=this.currentQIndex;document.getElementById('quest-list-container').style.display='block';document.getElementById('quest-editor-panel').style.display='none';this.renderQuestList();},
-        deleteQuest(index){if(confirm(`Удалить задание #${index+1}?`)){this.quests.splice(index,1);this.previewQuestIndex=0;this.renderQuestList();}},
+        saveQuest(){if(this.currentQuestIndex===-1)return;const q=this.quests[this.currentQuestIndex]; // Corrected currentQIndex to currentQuestIndex
+            q.type=document.querySelector('#quest-editor-panel .sub-tab-link.active').id==='b_choice'?'choice':'input';
+            q.text=document.getElementById('i_q_text').value;
+            if(q.type==='choice'){
+                q.correct=document.getElementById('i_c_ans').value;
+                q.wrongs=[document.getElementById('i_w1').value,document.getElementById('i_w2').value];
+            }else{
+                q.correctInp=document.getElementById('i_in_ans').value;
+            }
+            this.previewQuestIndex=this.currentQuestIndex; // Corrected currentQIndex to currentQuestIndex
+            document.getElementById('quest-list-container').style.display='block';
+            document.getElementById('quest-editor-panel').style.display='none';
+            this.renderQuestList();
+            this.updatePreview(); // Ensure preview updates after saving
+        },
+        deleteQuest(index){if(confirm(`Удалить задание #${index+1}?`)){this.quests.splice(index,1);this.previewQuestIndex=0;this.renderQuestList();this.updatePreview();}},
         prevPreviewQuest(){if(this.previewQuestIndex>0){this.previewQuestIndex--;this.updatePreview();}},
         nextPreviewQuest(){if(this.previewQuestIndex<this.quests.length-1){this.previewQuestIndex++;this.updatePreview();}},
         updatePreview(){
@@ -402,12 +439,10 @@
             const questionTextElement = document.getElementById('prev_q_text');
             questionTextElement.innerHTML = ''; // Clear previous content
 
-            // Add quest index as plain text
             const indexSpan = document.createElement('span');
             indexSpan.innerText = (this.quests.length > 0 ? `(${this.previewQuestIndex + 1}/${this.quests.length}) ` : '');
             questionTextElement.appendChild(indexSpan);
 
-            // Render the actual question text using the helper
             const mathContentSpan = document.createElement('span');
             this.renderLatexOrText(mathContentSpan, currentQ.text);
             questionTextElement.appendChild(mathContentSpan);
@@ -433,15 +468,11 @@
                     }).join('');
                     btnsDiv.innerHTML=btnsHTML;
                 }else{
-                    // For input type, the input box is still plain text.
-                    // The correct answer hint should show rendered LaTeX if it contains it.
                     let hintHTML = '';
-                    if (currentQ.correctInp && (currentQ.correctInp.includes('$') || currentQ.correctInp.includes('\\'))) {
+                    if (currentQ.correctInp) { // Check if correctInp exists
                         const tempDiv = document.createElement('div');
-                        this.renderLatexOrText(tempDiv, currentQ.correctInp);
+                        this.renderLatexOrText(tempDiv, currentQ.correctInp); // Render potential LaTeX in hint
                         hintHTML = `<div style="font-size:12px; margin-top:5px; color:#888;">Ожидается: ${tempDiv.innerHTML}</div>`;
-                    } else if (currentQ.correctInp) {
-                        hintHTML = `<div style="font-size:12px; margin-top:5px; color:#888;">Ожидается: ${currentQ.correctInp}</div>`;
                     }
 
                     btnsDiv.innerHTML=`<input id="preview_input_ans" type="text" class="fx-input" style="width:150px; text-align:center;" placeholder="Ваш ответ..."><div class="q-dummy-btn" onclick="app.previewInputAnswer()">OK</div>${hintHTML}`;
@@ -483,7 +514,8 @@
 
             const generatedOverlay = d.titleScreenOn ? `<div class="overlay" id="start-overlay"><div class="big-title">${langData[this.gameLang].title.replace(/\|/g, '<br>')}</div><button class="play-btn" onclick="startGame()"> ${langData[this.gameLang].play}</button></div>` : '';
 
-            const script=`<script>
+            // --- CHANGED: Added 'defer' to the generated script tag ---
+            const script=`<script defer>
 let timerVal=${d.timer*60},timerOn=${d.timerOn},audioCtx=null,currentQIndex=-1,locIndex=0,isAnswered=false,battleState=50,isGameOver=false,gameStarted=false;
 const quests=${JSON.stringify(this.quests)},locations=${JSON.stringify(this.locations.map(l=>l.data))},langPack=${JSON.stringify(langData[this.gameLang])};
 const step=50/((quests.length||1));
@@ -498,7 +530,6 @@ function startTimer(){const e=document.getElementById('timer-disp');const i=setI
 timerVal--;let m=Math.floor(timerVal/60);let s=timerVal%60;e.innerText=(m<10?'0'+m:m)+':'+(s<10?'0'+s:s);if(timerVal<=0){clearInterval(i);endGame(battleState>50);}},1000);}
 function updatePositionsAndProgress(){const heroWrap=document.getElementById('hero-wrap');const bossWrap=document.getElementById('boss-wrap');const barH=document.getElementById('bar-h');const barB=document.getElementById('bar-b');const heroAdvantage=battleState-50;const heroMove=Math.max(0,heroAdvantage)*2;const bossMove=Math.max(0,-heroAdvantage)*2;heroWrap.style.transform=\`translateX(\${heroMove}%)\`;bossWrap.style.transform=\`translateX(-\${bossMove}%)\`;barH.style.width=\`\${battleState}%\`;barB.style.width=\`\${100-battleState}%\`;if(battleState>=100)endGame(true);else if(battleState<=0)endGame(false);}
 
-// Helper function to render LaTeX or plain text in the generated game
 function renderLatexOrTextGame(element, content) {
     if (typeof katex === 'undefined' || !content || (!content.includes('$') && !content.includes('\\'))) {
         element.innerText = content;
@@ -520,7 +551,7 @@ function renderLatexOrTextGame(element, content) {
         });
     } catch (e) {
         console.error('KaTeX rendering error for:', content, e);
-        element.innerText = content; // Fallback
+        element.innerText = content; 
     }
 }
 
@@ -528,7 +559,7 @@ function loadNextQuestion(){isAnswered=false;currentQIndex++;const isGameEnd=cur
 if(locations.length>0&&currentQIndex>0){locIndex=(locIndex+1)%locations.length;document.body.style.backgroundImage=\`url(\${locations[locIndex]})\`;}
 const q=quests[currentQIndex];
 const qTextElement = document.getElementById('q-text');
-renderLatexOrTextGame(qTextElement, q.text); // Use helper for question text
+renderLatexOrTextGame(qTextElement, q.text); 
 
 const p=document.getElementById('q-inputs');let html='';
 if(q.type==='choice'){
@@ -537,18 +568,15 @@ if(q.type==='choice'){
     ans.sort(()=>Math.random()-0.5);
     html=`<div class="btns">${ans.map(a=>{
         const tempDiv = document.createElement('div');
-        renderLatexOrTextGame(tempDiv, a.t); // Use helper for choice answers
+        renderLatexOrTextGame(tempDiv, a.t); 
         return `<button data-correct="\${a.c}" class="game-btn" onclick="checkChoice(this,\${a.c})">\${tempDiv.innerHTML}</button>`;
     }).join('')}</div>`;
 }else{
     html=`<div class="inp-area"><div class="inp-row"><input type="text" id="inp-ans" placeholder="..." autocomplete="off"><button class="game-btn" onclick="checkInput()">OK</button></div></div>`;
-    // Add LaTeX hint for input questions
-    if (q.correctInp && (q.correctInp.includes('$') || q.correctInp.includes('\\'))) {
+    if (q.correctInp) { 
         const tempDiv = document.createElement('div');
         renderLatexOrTextGame(tempDiv, q.correctInp);
         html += `<div class="correct-answer-hint">Верный ответ: ${tempDiv.innerHTML}</div>`;
-    } else if (q.correctInp) {
-        html += `<div class="correct-answer-hint">Верный ответ: ${q.correctInp}</div>`;
     }
 }
 p.innerHTML=html;}
@@ -556,7 +584,6 @@ function showScore(targetId,text,color){const scorePopup=document.getElementById
 function animateAttack(attackerId,targetId,color,scoreText){const projectile=document.getElementById('projectile');const attacker=document.getElementById(attackerId);const target=document.getElementById(targetId);const targetImg=document.getElementById(targetId.replace('-wrap','-img'));const battleGround=document.querySelector('.battle-ground');const startCharRect=attacker.getBoundingClientRect();const targetCharRect=target.getBoundingClientRect();const battleGroundRect=battleGround.getBoundingClientRect();const startX=(startCharRect.left+startCharRect.width/2)-battleGroundRect.left;const startY=(startCharRect.top+startCharRect.height/2)-battleGroundRect.top;const endX=(targetCharRect.left+targetCharRect.width/2)-battleGroundRect.left;const endY=(targetCharRect.top+targetCharRect.height/2)-battleGroundRect.top;projectile.style.background=color;projectile.style.boxShadow=\`0 0 15px \${color}, 0 0 25px \${color}\`;projectile.style.left=startX+'px';projectile.style.top=startY+'px';projectile.style.opacity='1';projectile.style.transform='scale(1)';setTimeout(()=>{projectile.style.left=endX+'px';projectile.style.top=endY+'px';},10);setTimeout(()=>{beep('hit');projectile.style.transform='scale(3)';projectile.style.opacity='0';targetImg.style.animation='fx-shake 0.4s';targetImg.style.filter=\`drop-shadow(0 0 25px \${color})\`;showScore(attackerId,scoreText,'var(--green)');setTimeout(()=>{targetImg.style.animation='';targetImg.style.filter='';},400);},550);}
 function checkChoice(b,isCor){if(!gameStarted)activateGame();if(isAnswered)return;isAnswered=true;document.querySelectorAll('.btns .game-btn').forEach(btn=>btn.disabled=true);if(isCor){handleCorrect(b);}else{handleWrong(b);const correctBtn=document.querySelector('.game-btn[data-correct=\\"true\\"]');if(correctBtn)correctBtn.style.background='var(--green)';}}
 function checkInput(){if(!gameStarted)activateGame();if(isAnswered)return;isAnswered=true;const i=document.getElementById('inp-ans');i.disabled=true;document.querySelector('.inp-area .game-btn').disabled=true;if(i.value.trim().toLowerCase()===(quests[currentQIndex].correctInp||'').trim().toLowerCase()){handleCorrect(i);}else{handleWrong(i);
-    // Display hint from correctInp (could be LaTeX or plain text)
     const hintDiv = document.createElement('div');
     hintDiv.className = 'correct-answer-hint';
     renderLatexOrTextGame(hintDiv, 'Верный ответ: ' + quests[currentQIndex].correctInp);
@@ -570,6 +597,8 @@ p.innerHTML=\`<h2 style='font-size:40px;color:\${color};text-shadow:0 0 20px \${
 function initGame(){if(${d.titleScreenOn}){}else{document.getElementById('game-root').style.opacity='1';loadNextQuestion();}}
 document.addEventListener('DOMContentLoaded',initGame);
 <\/script>`;
+            // --- END CHANGED script tag ---
+
             const html=`<!DOCTYPE html><html><head><style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@700&family=Montserrat:wght@900&display=swap');
 :root{ --primary: #8A2BE2; --red: #ff3b30; --green: #00FF88; --magenta: #e521e5;}
@@ -626,8 +655,8 @@ body{margin:0;overflow:hidden;font-family:'Rajdhani',sans-serif;user-select:none
 .inp-row{display:flex;gap:10px;}
 input[type=text]{padding:15px;border-radius:6px;border:2px solid #fff;font-family:inherit;font-weight:700;background:#000;color:#fff;font-size:18px;outline:none; transition: 0.3s;}
 .correct-answer-hint { color: var(--green); margin-top: 5px; font-size: 16px; font-weight: 700; }
-.katex { font-size: 1em; } /* Adjust as needed */
-.katex-display > .katex { margin-left: auto !important; margin-right: auto !important; } /* Center display math in generated game */
+.katex { font-size: 1em; } 
+.katex-display > .katex { margin-left: auto !important; margin-right: auto !important; } 
 </style>
 </head>
 <body>
