@@ -2,10 +2,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Montserrat:wght@400;700;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        
-        /* ДОБАВЛЕНО: KaTeX стили */
-        @import url('https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css');
-        
         #FX_ROOT {
             --bg-dark: #0A0912; --bg-panel: #12101E; --primary: #8A2BE2; --cyan: #00D2FF;
             --green: #00FF88; --red: #ff3b30; --text: #EAEAEA; --border: rgba(138, 43, 226, 0.3);
@@ -13,17 +9,6 @@
             background: var(--bg-dark); color: var(--text); overflow: hidden; position: relative; display: flex;
         }
         #FX_ROOT * { box-sizing: border-box; user-select: none; outline: none; }
-        
-        /* ДОБАВЛЕНО: Стили для математических формул */
-        .math-formula { 
-            display: inline-block; 
-            font-size: 1.1em; 
-            vertical-align: middle;
-        }
-        .q-preview-text .math-formula {
-            font-size: 1.3em;
-        }
-        
         .fx-btn { background: rgba(138, 43, 226, 0.1); border: 1px solid var(--border); color: var(--cyan); padding: 8px; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-weight: 700; text-transform: uppercase; transition: 0.2s; border-radius: 6px; font-size: 11px; text-align: center; }
         .fx-btn:hover { border-color: var(--primary); color: #fff; background: rgba(138, 43, 226, 0.3); }
         .fx-btn:disabled { opacity: 0.3; cursor: not-allowed; }
@@ -65,8 +50,8 @@
             width: 40%; height: auto; display: flex; align-items: flex-end; justify-content: center; 
             position: absolute; transition: bottom 0.3s ease-out;
         }
-        .char-box:first-child { left: 10%; }
-        .char-box:last-child { right: 10%; }
+        .char-box:first-child { left: 10%; } /* Hero */
+        .char-box:last-child { right: 10%; } /* Boss */
         
         .char-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: 0.3s; }
         .quest-dock { position: absolute; bottom: 0; left: 0; right: 0; background: var(--bg-panel); border-top: 3px solid var(--cyan); padding: 15px; z-index: 10; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
@@ -84,6 +69,9 @@
 
         @keyframes fx-idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes fx-float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-15px) rotate(2deg)}}@keyframes fx-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}@keyframes fx-shake{0%{transform:translate(1px, 1px)}20%{transform:translate(-3px, 0px)}40%{transform:translate(1px, -1px)}60%{transform:translate(-3px, 1px)}80%{transform:translate(-1px, -1px)}100%{transform:translate(1px, -2px)}}@keyframes fx-glitch{0%{transform:translate(0)}20%{transform:translate(-2px, 2px)}40%{transform:translate(-2px, -2px)}60%{transform:translate(2px, 2px)}80%{transform:translate(2px, -2px)}100%{transform:translate(0)}}@keyframes fx-spin{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}@keyframes fx-neon{0%,100%{opacity:1;filter:brightness(1)}50%{opacity:0.8;filter:brightness(1.5)}}@keyframes fx-wobble{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}@keyframes fx-swing{0%{transform:rotate(0deg)}20%{transform:rotate(15deg)}40%{transform:rotate(-10deg)}60%{transform:rotate(5deg)}80%{transform:rotate(-5deg)}100%{transform:rotate(0deg)}}@keyframes fx-bounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-30px)}60%{transform:translateY(-15px)}}@keyframes fx-flip{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}@keyframes fx-ghost{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.05)}}
     </style>
+    <!-- Include math.js for the editor's preview functionality -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.1/math.min.js"></script>
+
     <div class="view-editor">
         <div class="sidebar">
             <div class="sidebar-content">
@@ -148,7 +136,7 @@
                     </div>
                     <div class="control-group"><span class="control-label">Язык Игры</span><div class="sub-tabs" style="padding:0 0 10px 0;"><button class="sub-tab-link active" onclick="app.setGameLang('ru')">RU</button><button class="sub-tab-link" onclick="app.setGameLang('en')">EN</button></div><div id="lang_ru_fields"><label style="font-size:9px;color:#888;">Заголовок ( | = перенос):</label><input type="text" class="fx-input" id="i_title_ru" value="БИТВА|С БОССОМ"><label style="font-size:9px;color:#888;">Победа:</label><input type="text" class="fx-input" id="i_win_msg_ru" value="ТЫ ПОБЕДИЛ!"><label style="font-size:9px;color:#888;">Поражение:</label><input type="text" class="fx-input" id="i_lose_msg_ru" value="ТЫ ПРОИГРАЛ!"><label style="font-size:9px;color:#888;">Кнопка старт:</label><input type="text" class="fx-input" id="i_play_btn_ru" value="ИГРАТЬ"></div><div id="lang_en_fields" style="display:none;"><label style="font-size:9px;color:#888;">Title ( | = new line):</label><input type="text" class="fx-input" id="i_title_en" value="BOSS|BATTLE"><label style="font-size:9px;color:#888;">Win:</label><input type="text" class="fx-input" id="i_win_msg_en" value="YOU WIN!"><label style="font-size:9px;color:#888;">Lose:</label><input type="text" class="fx-input" id="i_lose_msg_en" value="YOU LOSE!"><label style="font-size:9px;color:#888;">Start Button:</label><input type="text" class="fx-input" id="i_play_btn_en" value="PLAY"></div></div>
                     <div id="quest-list-container"><div class="control-group"><span class="control-label">Список заданий</span><div id="quest-list" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;"></div><button class="fx-btn" style="width:100%" onclick="app.addQuest()">+ ДОБАВИТЬ ЗАДАНИЕ</button></div></div>
-                    <div id="quest-editor-panel"><div class="control-group"><span class="control-label" id="editor-title">РЕДАКТОР</span><div class="sub-tabs"><button class="sub-tab-link active" onclick="app.setQType('choice')" id="b_choice">ВЫБОР</button><button class="sub-tab-link" onclick="app.setQType('input')" id="b_input">ВВОД</button></div><span class="control-label">Текст вопроса (можно использовать LaTeX: $x^2$)</span><textarea class="fx-textarea" id="i_q_text" rows="2"></textarea><div id="area_choice"><span class="control-label" style="color:var(--green)">Верный ответ</span><input type="text" class="fx-input" id="i_c_ans"><span class="control-label" style="color:var(--primary)">Неверные ответы</span><input type="text" class="fx-input" id="i_w1"><input type="text" class="fx-input" id="i_w2"></div><div id="area_input" style="display:none"><span class="control-label" style="color:var(--green)">Правильный текст</span><input type="text" class="fx-input" id="i_in_ans"></div><button class="fx-btn" style="width:100%;margin-top:10px;background:var(--green);color:#000;border-color:var(--green)" onclick="app.saveQuest()">СОХРАНИТЬ</button></div></div>
+                    <div id="quest-editor-panel"><div class="control-group"><span class="control-label" id="editor-title">РЕДАКТОР</span><div class="sub-tabs"><button class="sub-tab-link active" onclick="app.setQType('choice')" id="b_choice">ВЫБОР</button><button class="sub-tab-link" onclick="app.setQType('input')" id="b_input">ВВОД</button></div><span class="control-label">Текст вопроса</span><textarea class="fx-textarea" id="i_q_text" rows="2"></textarea><div id="area_choice"><span class="control-label" style="color:var(--green)">Верный ответ</span><input type="text" class="fx-input" id="i_c_ans"><span class="control-label" style="color:var(--primary)">Неверные ответы</span><input type="text" class="fx-input" id="i_w1"><input type="text" class="fx-input" id="i_w2"></div><div id="area_input" style="display:none"><span class="control-label" style="color:var(--green)">Правильный текст (или математическое выражение)</span><input type="text" class="fx-input" id="i_in_ans"><div class="param-row" style="margin-top:10px;"><span>Математическое выражение?</span><input type="checkbox" id="chk_is_math"></div></div><button class="fx-btn" style="width:100%;margin-top:10px;background:var(--green);color:#000;border-color:var(--green)" onclick="app.saveQuest()">СОХРАНИТЬ</button></div></div>
                 </div>
             </div>
             <div class="gen-panel"><button class="btn-generate" onclick="app.generate()" id="b_gen">СКОПИРОВАТЬ КОД</button></div>
@@ -175,26 +163,7 @@
     </div>
     <textarea id="hidden_code" style="position:absolute;left:-9999px;top:0;opacity:0;"></textarea>
 
-    <!-- ДОБАВЛЕНО: KaTeX библиотека -->
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-
     <script>
-        // ДОБАВЛЕНА ФУНКЦИЯ: Рендеринг математических формул
-        function renderMath(element) {
-            if (typeof renderMathInElement !== 'undefined') {
-                renderMathInElement(element, {
-                    delimiters: [
-                        {left: '$$', right: '$$', display: true},
-                        {left: '$', right: '$', display: false},
-                        {left: '\$$', right: '\$$', display: true},
-                        {left: '\$', right: '\$', display: false}
-                    ],
-                    throwOnError: false
-                });
-            }
-        }
-
         const app={previewQuestIndex:0,currentQuestIndex:-1,quests:[],locations:[],musicFile:null,gameLang:'ru',
         data:{
             hero:{src:'',anim:'idle',size:100,gC:'#00e5ff',gP:0,speed:3, landingOffset: 15},
@@ -212,279 +181,478 @@
             this.addQuest(true);
             this.updatePreview();
         },
-        setMainTab(t){document.querySelectorAll('.main-tab-link').forEach(e=>e.classList.remove('active'));document.querySelector(`[onclick="app.setMainTab('${t}')"]`).classList.add('active');document.querySelectorAll('.section-content').forEach(e=>e.classList.remove('show'));document.getElementById(`sec_${t}`).classList.add('show');},
-        setCharTab(t){document.querySelectorAll('#sec_chars .sub-tab-link').forEach(e=>e.classList.remove('active'));document.querySelector(`[onclick="app.setCharTab('${t}')"]`).classList.add('active');document.getElementById('cfg_hero').style.display=t==='hero'?'block':'none';document.getElementById('cfg_boss').style.display=t==='boss'?'block':'none';},
-        setQType(t){document.querySelectorAll('#quest-editor-panel .sub-tab-link').forEach(e=>e.classList.remove('active'));if(t==='choice'){document.getElementById('b_choice').classList.add('active');document.getElementById('area_choice').style.display='block';document.getElementById('area_input').style.display='none';}else{document.getElementById('b_input').classList.add('active');document.getElementById('area_choice').style.display='none';document.getElementById('area_input').style.display='block';}},
-        setGameLang(l){this.gameLang=l;document.querySelectorAll('#sec_quests .sub-tabs button').forEach(b=>b.classList.remove('active'));document.querySelector(`[onclick="app.setGameLang('${l}')"]`).classList.add('active');document.getElementById('lang_ru_fields').style.display=l==='ru'?'block':'none';document.getElementById('lang_en_fields').style.display=l==='en'?'block':'none';},
-        renderAnims(who){const grid=document.getElementById(`ag_${who}`);this.anims.forEach(a=>{const btn=document.createElement('button');btn.className='fx-btn';btn.textContent=a.name;btn.onclick=()=>{this.data[who].anim=a.id;this.updatePreview();grid.querySelectorAll('.fx-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');};if(a.id==='idle')btn.classList.add('active');grid.appendChild(btn);});},
+        setMainTab(t){document.querySelectorAll('.main-tab-link').forEach(e=>e.classList.remove('active'));document.querySelector(`[onclick="app.setMainTab('${t}')"]`).classList.add('active');document.getElementById('sec_chars').classList.toggle('show',t==='chars');document.getElementById('sec_quests').classList.toggle('show',t==='quests');},
+        setCharTab(t){document.querySelector('#sec_chars .sub-tab-link.active').classList.remove('active');document.querySelector(`[onclick="app.setCharTab('${t}')"]`).classList.add('active');document.getElementById('cfg_hero').style.display=t==='hero'?'block':'none';document.getElementById('cfg_boss').style.display=t==='boss'?'block':'none';},
+        setQType(t){
+            document.querySelector('#quest-editor-panel #b_choice').className=t==='choice'?'sub-tab-link active':'sub-tab-link';
+            document.querySelector('#quest-editor-panel #b_input').className=t==='input'?'sub-tab-link active':'sub-tab-link';
+            document.querySelector('#quest-editor-panel #area_choice').style.display=t==='choice'?'block':'none';
+            document.querySelector('#quest-editor-panel #area_input').style.display=t==='input'?'block':'none';
+            this.updatePreview(); // Update preview when tab changes, especially for input type
+        },
+        setGameLang(l){this.gameLang=l;const btnContainer=document.querySelector('#sec_quests .sub-tabs');btnContainer.children[0].classList.toggle('active',l==='ru');btnContainer.children[1].classList.toggle('active',l==='en');document.getElementById('lang_ru_fields').style.display=l==='ru'?'block':'none';document.getElementById('lang_en_fields').style.display=l==='en'?'block':'none';},
+        renderAnims(target){const grid=document.getElementById('ag_'+target);grid.innerHTML='';this.anims.forEach(a=>{const b=document.createElement('div');b.className='fx-btn'+(this.data[target].anim===a.id?' active':'');b.innerText=a.name;b.onclick=()=>{this.data[target].anim=a.id;this.renderAnims(target);this.updatePreview();};grid.appendChild(b);});},
+
+        async loadImageAndCompress(source, quality = 0.7, maxWidth = 1024, maxHeight = 1024) {
+            return new Promise(async (resolve) => {
+                const img = new Image();
+                let detectedMimeType = 'image/jpeg';
+
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth || height > maxHeight) {
+                        const ratio = Math.min(maxWidth / width, maxHeight / height);
+                        width *= ratio;
+                        height *= ratio;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    let compressedDataUrl;
+                    if (detectedMimeType === 'image/png' || detectedMimeType === 'image/webp') {
+                        compressedDataUrl = canvas.toDataURL('image/png');
+                    } else {
+                        compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    }
+                    resolve(compressedDataUrl);
+                };
+                img.onerror = (e) => {
+                    console.error('Error loading image:', e);
+                    resolve(''); 
+                };
+
+                if (source instanceof File) {
+                    detectedMimeType = source.type;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(source);
+                } else if (typeof source === 'string') {
+                    if (source.startsWith('data:')) {
+                        const mimeMatch = source.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,/);
+                        if (mimeMatch && mimeMatch[1]) {
+                            detectedMimeType = mimeMatch[1];
+                        }
+                        img.src = source;
+                    } else {
+                        try {
+                            const response = await fetch(source, { mode: 'cors' });
+                            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                            const blob = await response.blob();
+                            detectedMimeType = blob.type;
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                img.src = e.target.result;
+                            };
+                            reader.onerror = (e) => {
+                                console.error('Error reading blob as DataURL:', e);
+                                resolve('');
+                            };
+                            reader.readAsDataURL(blob);
+                        } catch (error) {
+                            console.warn(`Could not fetch image from URL directly (might be CORS issue), falling back to direct src set. Transparency might not be preserved if original was PNG and was not a data URL: ${source}`, error);
+                            img.src = source; 
+                        }
+                    }
+                } else {
+                    console.error('Invalid source type for loadImageAndCompress');
+                    resolve('');
+                }
+            });
+        },
+
+        async handleImage(file,target){
+            if(file){
+                const compressedData = await this.loadImageAndCompress(file, 0.7, 512, 512);
+                this.data[target].src=compressedData;
+                this.updatePreview();
+            }
+        },
+        async handleImageURL(url, target){
+            if(url){
+                const compressedData = await this.loadImageAndCompress(url, 0.7, 512, 512);
+                this.data[target].src = compressedData;
+                this.updatePreview();
+            }
+        },
+        async handleLocations(files){
+            for(let file of files){
+                const compressedData = await this.loadImageAndCompress(file, 0.75, 1280, 1280);
+                this.locations.push({name:file.name,data:compressedData});
+            }
+            this.renderLocationList();
+        },
+        async addLocationURL(url){
+            if(url){
+                const compressedData = await this.loadImageAndCompress(url, 0.75, 1280, 1280);
+                const name = url.substring(url.lastIndexOf('/') + 1) || 'URL Image';
+                this.locations.push({name: name, data: compressedData});
+                this.renderLocationList();
+                document.getElementById('i_loc_url').value = '';
+            }
+        },
+        renderLocationList(){const c=document.getElementById('location-list');c.innerHTML='';this.locations.forEach((loc,i)=>{const item=document.createElement('div');item.className='list-item';item.innerHTML=`<span>${i+1}. ${loc.name}</span><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteLocation(${i})">X</button>`;c.appendChild(item);});c.style.display=this.locations.length>0?'flex':'none';this.updatePreview();},
+        deleteLocation(i){this.locations.splice(i,1);this.renderLocationList();},
+        handleMusic(file){if(file){const r=new FileReader();r.onload=e=>{this.musicFile={name:file.name,data:e.target.result};document.getElementById('music_name').textContent='Файл: '+file.name;};r.readAsDataURL(file);}},
         bindEvents(){
-            // Герой
-            document.getElementById('i_h_name').oninput=e=>{this.updatePreview();};
-            document.getElementById('f_hero').onchange=e=>{const f=e.target.files[0];if(f){const r=new FileReader();r.onload=ev=>{this.data.hero.src=ev.target.result;this.updatePreview();};r.readAsDataURL(f);}};
-            document.getElementById('r_h_size').oninput=e=>{this.data.hero.size=e.target.value;this.updatePreview();};
-            document.getElementById('r_h_glow').oninput=e=>{this.data.hero.gP=e.target.value;this.updatePreview();};
+            document.getElementById('f_hero').onchange=e=>this.handleImage(e.target.files[0],'hero');
+            document.getElementById('f_boss').onchange=e=>this.handleImage(e.target.files[0],'boss');
+            document.getElementById('f_loc').onchange=e=>this.handleLocations(e.target.files);
+            document.getElementById('f_music').onchange=e=>this.handleMusic(e.target.files[0]);
+            
+            document.getElementById('chk_title_screen').onchange=e=>{this.data.titleScreenOn=e.target.checked;this.updatePreview();};
+
+            ['hero','boss'].forEach(t=>{document.getElementById('i_'+t.charAt(0)+'_name').oninput=()=>this.updatePreview();});
+            const bindS=(id,target,key)=>document.getElementById(id).oninput=e=>{this.data[target][key]=e.target.value;this.updatePreview();};
+            bindS('r_h_size','hero','size');bindS('r_b_size','boss','size');bindS('r_h_glow','hero','gP');bindS('r_b_glow','boss','gP');bindS('r_h_speed','hero','speed');bindS('r_b_speed','boss','speed');
+
+            document.getElementById('r_h_landing').oninput = e => {
+                this.data.hero.landingOffset = e.target.value;
+                document.getElementById('val_h_landing').innerText = e.target.value + '%';
+                this.updatePreview();
+            };
+            document.getElementById('r_b_landing').oninput = e => {
+                this.data.boss.landingOffset = e.target.value;
+                document.getElementById('val_b_landing').innerText = e.target.value + '%';
+                this.updatePreview();
+            };
+            document.getElementById('val_h_landing').innerText = this.data.hero.landingOffset + '%';
+            document.getElementById('val_b_landing').innerText = this.data.boss.landingOffset + '%';
+
+
             document.getElementById('c_h_glow').oninput=e=>{this.data.hero.gC=e.target.value;this.updatePreview();};
-            document.getElementById('r_h_speed').oninput=e=>{this.data.hero.speed=e.target.value;this.updatePreview();};
-            document.getElementById('r_h_landing').oninput=e=>{this.data.hero.landingOffset=e.target.value;document.getElementById('val_h_landing').textContent=e.target.value+'%';this.updatePreview();};
-            
-            // Босс
-            document.getElementById('i_b_name').oninput=e=>{this.updatePreview();};
-            document.getElementById('f_boss').onchange=e=>{const f=e.target.files[0];if(f){const r=new FileReader();r.onload=ev=>{this.data.boss.src=ev.target.result;this.updatePreview();};r.readAsDataURL(f);}};
-            document.getElementById('r_b_size').oninput=e=>{this.data.boss.size=e.target.value;this.updatePreview();};
-            document.getElementById('r_b_glow').oninput=e=>{this.data.boss.gP=e.target.value;this.updatePreview();};
             document.getElementById('c_b_glow').oninput=e=>{this.data.boss.gC=e.target.value;this.updatePreview();};
-            document.getElementById('r_b_speed').oninput=e=>{this.data.boss.speed=e.target.value;this.updatePreview();};
-            document.getElementById('r_b_landing').oninput=e=>{this.data.boss.landingOffset=e.target.value;document.getElementById('val_b_landing').textContent=e.target.value+'%';this.updatePreview();};
+            document.getElementById('chk_timer').onchange=e=>{this.data.timerOn=e.target.checked;this.updatePreview();};
+            document.getElementById('r_timer').oninput=e=>{this.data.timer=e.target.value;document.getElementById('val_timer').innerText=e.target.value;this.updatePreview();};
             
-            // Локации и музыка
-            document.getElementById('f_loc').onchange=e=>{Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{this.locations.push(ev.target.result);this.renderLocationList();this.updatePreview();};r.readAsDataURL(f);});};
-            document.getElementById('f_music').onchange=e=>{const f=e.target.files[0];if(f){const r=new FileReader();r.onload=ev=>{this.musicFile=ev.target.result;document.getElementById('music_name').textContent=f.name;};r.readAsDataURL(f);}};
-            
-            // Настройки игры
-            document.getElementById('chk_title_screen').onchange=e=>{this.data.titleScreenOn=e.target.checked;};
-            document.getElementById('chk_timer').onchange=e=>{this.data.timerOn=e.target.checked;};
-            document.getElementById('r_timer').oninput=e=>{this.data.timer=e.target.value;document.getElementById('val_timer').textContent=e.target.value;this.updatePreview();};
-            
-            // ДОБАВЛЕНО: Обновление превью при вводе вопроса (с поддержкой LaTeX)
-            document.getElementById('i_q_text').oninput=()=>{this.updateQuestionPreview();};
-            document.getElementById('i_c_ans').oninput=()=>{this.updateQuestionPreview();};
-            document.getElementById('i_w1').oninput=()=>{this.updateQuestionPreview();};
-            document.getElementById('i_w2').oninput=()=>{this.updateQuestionPreview();};
-            document.getElementById('i_in_ans').oninput=()=>{this.updateQuestionPreview();};
+            // Add event listener for math checkbox in editor
+            document.getElementById('chk_is_math').onchange = () => this.updatePreview();
         },
-        handleImageURL(url,who){if(url.trim()){this.data[who].src=url;this.updatePreview();}},
-        addLocationURL(url){if(url.trim()){this.locations.push(url);this.renderLocationList();this.updatePreview();document.getElementById('i_loc_url').value='';}},
-        renderLocationList(){const list=document.getElementById('location-list');list.innerHTML='';if(this.locations.length>0){list.style.display='flex';this.locations.forEach((loc,i)=>{const item=document.createElement('div');item.className='list-item';item.innerHTML=`<span>Локация ${i+1}</span><button class="fx-btn" onclick="app.removeLocation(${i})">✕</button>`;list.appendChild(item);});}else{list.style.display='none';}},
-        removeLocation(i){this.locations.splice(i,1);this.renderLocationList();this.updatePreview();},
-        addQuest(isFirst=false){const q={type:'choice',text:'Новый вопрос',correct:'Верный ответ',wrong:['Неверный 1','Неверный 2']};this.quests.push(q);this.renderQuestList();if(!isFirst){this.editQuest(this.quests.length-1);}},
-        renderQuestList(){const list=document.getElementById('quest-list');list.innerHTML='';this.quests.forEach((q,i)=>{const item=document.createElement('div');item.className='list-item';const preview=q.text.length>25?q.text.substring(0,25)+'...':q.text;item.innerHTML=`<span>${i+1}. ${preview}</span><div><button class="fx-btn" onclick="app.editQuest(${i})">✎</button><button class="fx-btn" onclick="app.deleteQuest(${i})">✕</button></div>`;list.appendChild(item);});this.updateQuestPreview();},
-        editQuest(i){this.currentQuestIndex=i;const q=this.quests[i];document.getElementById('editor-title').textContent=`ЗАДАНИЕ ${i+1}`;document.getElementById('quest-list-container').style.display='none';document.getElementById('quest-editor-panel').style.display='block';this.setQType(q.type);document.getElementById('i_q_text').value=q.text;if(q.type==='choice'){document.getElementById('i_c_ans').value=q.correct;document.getElementById('i_w1').value=q.wrong[0]||'';document.getElementById('i_w2').value=q.wrong[1]||'';}else{document.getElementById('i_in_ans').value=q.correct;}
-            // ДОБАВЛЕНО: Обновление превью при редактировании
-            this.updateQuestionPreview();
+        renderQuestList(){const list=document.getElementById('quest-list');list.innerHTML='';this.quests.forEach((q,i)=>{const item=document.createElement('div');item.className='list-item';item.innerHTML=`<span>${i+1}. ${q.text||'Новый вопрос'}</span><div><button class="fx-btn" onclick="app.editQuest(${i})">✏️</button><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteQuest(${i})">🗑️</button></div>`;list.appendChild(item);});this.updatePreview();},
+        addQuest(isFirst=false){const newQ={type:'choice',text:'Сколько будет 2 + 2?',correct:'4',wrongs:['5','22'],correctInp:'4', isMath: false};this.quests.push(newQ);if(!isFirst)this.renderQuestList();this.editQuest(this.quests.length-1);},
+        editQuest(index){
+            this.currentQuestIndex=index;
+            const q=this.quests[index];
+            document.getElementById('editor-title').innerText=`ЗАДАНИЕ #${index+1}`;
+            this.setQType(q.type);
+            document.getElementById('i_q_text').value=q.text;
+            document.getElementById('i_c_ans').value=q.correct;
+            document.getElementById('i_w1').value=q.wrongs[0];
+            document.getElementById('i_w2').value=q.wrongs[1];
+            document.getElementById('i_in_ans').value=q.correctInp;
+            document.getElementById('chk_is_math').checked = q.isMath || false; // Load math checkbox state
+            document.getElementById('quest-list-container').style.display='none';
+            document.getElementById('quest-editor-panel').style.display='block';
         },
-        saveQuest(){if(this.currentQuestIndex===-1)return;const type=document.getElementById('area_choice').style.display==='none'?'input':'choice';const text=document.getElementById('i_q_text').value;let correct,wrong=[];if(type==='choice'){correct=document.getElementById('i_c_ans').value;wrong=[document.getElementById('i_w1').value,document.getElementById('i_w2').value];}else{correct=document.getElementById('i_in_ans').value;}this.quests[this.currentQuestIndex]={type,text,correct,wrong};this.currentQuestIndex=-1;document.getElementById('quest-list-container').style.display='block';document.getElementById('quest-editor-panel').style.display='none';this.renderQuestList();},
-        deleteQuest(i){this.quests.splice(i,1);this.renderQuestList();},
-        updatePreview(){
-            // Имена
-            document.getElementById('p_h_name').textContent=document.getElementById('i_h_name').value;
-            document.getElementById('p_b_name').textContent=document.getElementById('i_b_name').value;
-            
-            // Таймер
-            const m=String(this.data.timer).padStart(2,'0');
-            document.getElementById('p_timer').textContent=`${m}:00`;
-            
-            // Изображения
-            const hImg=document.getElementById('img_hero');
-            const bImg=document.getElementById('img_boss');
-            if(this.data.hero.src){hImg.src=this.data.hero.src;hImg.style.display='block';}else{hImg.style.display='none';}
-            if(this.data.boss.src){bImg.src=this.data.boss.src;bImg.style.display='block';}else{bImg.style.display='none';}
-            
-            // Стили героя
-            const hBox=document.getElementById('prev_hero_box');
-            hBox.style.bottom=this.data.hero.landingOffset+'%';
-            hImg.style.width=this.data.hero.size+'%';
-            hImg.style.filter=this.data.hero.gP>0?`drop-shadow(0 0 ${this.data.hero.gP}px ${this.data.hero.gC})`:'none';
-            hImg.style.animation=`fx-${this.data.hero.anim} ${11-this.data.hero.speed}s infinite ease-in-out`;
-            
-            // Стили босса
-            const bBox=document.getElementById('prev_boss_box');
-            bBox.style.bottom=this.data.boss.landingOffset+'%';
-            bImg.style.width=this.data.boss.size+'%';
-            bImg.style.filter=this.data.boss.gP>0?`drop-shadow(0 0 ${this.data.boss.gP}px ${this.data.boss.gC})`:'none';
-            bImg.style.animation=`fx-${this.data.boss.anim} ${11-this.data.boss.speed}s infinite ease-in-out`;
-            
-            // Фон
-            if(this.locations.length>0){document.getElementById('stage_bg').style.backgroundImage=`url(${this.locations[0]})`;}
-        },
-        
-        // ДОБАВЛЕНА ФУНКЦИЯ: Обновление превью вопроса с рендерингом LaTeX
-        updateQuestionPreview(){
-            if(this.currentQuestIndex===-1 || this.quests.length===0)return;
-            const textEl=document.getElementById('prev_q_text');
-            const text=document.getElementById('i_q_text').value;
-            textEl.innerHTML=text;
-            // Рендеринг математических формул
-            renderMath(textEl);
-            
-            const btnsEl=document.getElementById('prev_q_btns');
-            btnsEl.innerHTML='';
-            const type=document.getElementById('area_choice').style.display==='none'?'input':'choice';
-            
-            if(type==='choice'){
-                const correct=document.getElementById('i_c_ans').value;
-                const w1=document.getElementById('i_w1').value;
-                const w2=document.getElementById('i_w2').value;
-                const answers=[correct,w1,w2].filter(a=>a.trim());
-                answers.forEach((ans,idx)=>{
-                    const btn=document.createElement('button');
-                    btn.className='q-dummy-btn';
-                    if(idx===0)btn.classList.add('correct');
-                    btn.textContent=ans;
-                    btnsEl.appendChild(btn);
-                });
-            }else{
-                const inp=document.createElement('input');
-                inp.type='text';
-                inp.className='fx-input';
-                inp.placeholder='Введите ответ...';
-                inp.style.maxWidth='300px';
-                btnsEl.appendChild(inp);
-            }
-        },
-        
-        updateQuestPreview(){
-            if(this.quests.length===0){
-                document.getElementById('prev_q_text').innerHTML='Добавьте задания →';
-                document.getElementById('prev_q_btns').innerHTML='';
-                return;
-            }
-            const q=this.quests[this.previewQuestIndex];
-            const textEl=document.getElementById('prev_q_text');
-            textEl.innerHTML=q.text;
-            
-            // ДОБАВЛЕНО: Рендеринг математических формул в превью
-            renderMath(textEl);
-            
-            const btnsEl=document.getElementById('prev_q_btns');
-            btnsEl.innerHTML='';
+        saveQuest(){
+            if(this.currentQuestIndex===-1)return;
+            const q=this.quests[this.currentQuestIndex];
+            q.type=document.querySelector('#quest-editor-panel .sub-tab-link.active').id==='b_choice'?'choice':'input';
+            q.text=document.getElementById('i_q_text').value;
             if(q.type==='choice'){
-                const all=[q.correct,...q.wrong].filter(a=>a);
-                all.forEach((ans,idx)=>{
-                    const btn=document.createElement('button');
-                    btn.className='q-dummy-btn';
-                    if(idx===0)btn.classList.add('correct');
-                    btn.innerHTML=ans;
-                    // ДОБАВЛЕНО: Рендеринг формул в кнопках ответов
-                    renderMath(btn);
-                    btnsEl.appendChild(btn);
-                });
+                q.correct=document.getElementById('i_c_ans').value;
+                q.wrongs=[document.getElementById('i_w1').value,document.getElementById('i_w2').value];
+                q.isMath = false; // Math only applies to input questions
             }else{
-                const inp=document.createElement('input');
-                inp.type='text';
-                inp.className='fx-input';
-                inp.placeholder='Введите ответ...';
-                inp.style.maxWidth='300px';
-                btnsEl.appendChild(inp);
+                q.correctInp=document.getElementById('i_in_ans').value;
+                q.isMath = document.getElementById('chk_is_math').checked; // Save math checkbox state
+            }
+            this.previewQuestIndex=this.currentQuestIndex;
+            document.getElementById('quest-list-container').style.display='block';
+            document.getElementById('quest-editor-panel').style.display='none';
+            this.renderQuestList();
+        },
+        deleteQuest(index){if(confirm(`Удалить задание #${index+1}?`)){this.quests.splice(index,1);this.previewQuestIndex=0;this.renderQuestList();}},
+        prevPreviewQuest(){if(this.previewQuestIndex>0){this.previewQuestIndex--;this.updatePreview();}},
+        nextPreviewQuest(){if(this.previewQuestIndex<this.quests.length-1){this.previewQuestIndex++;this.updatePreview();}},
+
+        // Helper function for math evaluation in editor preview
+        evaluateMathExpression(expression) {
+            try {
+                // 'math' is globally available from the CDN script
+                const result = math.evaluate(expression);
+                // math.js can return various types, ensure it's a number for comparison
+                if (typeof result === 'number') {
+                    return { value: result, error: null };
+                } else if (result && typeof result.valueOf === 'function' && typeof result.valueOf() === 'number') {
+                     // For math.js BigNumber or Fraction types, convert to primitive number
+                    return { value: result.valueOf(), error: null };
+                }
+                return { value: NaN, error: 'Result is not a number.' };
+            } catch (e) {
+                return { value: NaN, error: e.message };
             }
         },
-        prevPreviewQuest(){if(this.quests.length===0)return;this.previewQuestIndex=(this.previewQuestIndex-1+this.quests.length)%this.quests.length;this.updateQuestPreview();},
-        nextPreviewQuest(){if(this.quests.length===0)return;this.previewQuestIndex=(this.previewQuestIndex+1)%this.quests.length;this.updateQuestPreview();},
-        
-        generate(){
-            const code=`<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Boss Battle Game</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&family=Press+Start+2P&display=swap');
-*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Rajdhani',sans-serif;overflow:hidden;background:#000}#game{width:100vw;height:100vh;position:relative;background-size:cover;background-position:center}
-.hud{position:absolute;top:0;left:0;right:0;padding:20px;display:flex;justify-content:space-between;align-items:center;z-index:100}
-.player-hud{display:flex;align-items:center;gap:15px}.player-hud.right{flex-direction:row-reverse}
-.char-name{font-size:24px;font-weight:700;color:#fff;text-shadow:2px 2px 4px #000}
-.hp-bar{width:250px;height:20px;background:rgba(0,0,0,0.7);border:2px solid #fff;border-radius:10px;overflow:hidden;position:relative}
-.hp-fill{height:100%;transition:width 0.5s;background:linear-gradient(90deg,#00ff88,#00cc66)}
-.boss-hp .hp-fill{background:linear-gradient(90deg,#ff3b30,#cc0000)}
-.timer{font-family:'Press Start 2P';font-size:32px;color:#ffd700;text-shadow:3px 3px 6px #000;background:rgba(0,0,0,0.5);padding:10px 20px;border-radius:10px}
-.char{position:absolute;bottom:15%;max-width:35%;max-height:60%;object-fit:contain;transition:transform 0.3s}
-.char.hero{left:10%}.char.boss{right:10%}
-.quest-panel{position:absolute;bottom:0;left:0;right:0;background:rgba(10,10,30,0.95);border-top:4px solid #00d2ff;padding:30px;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
-.question{font-size:28px;font-weight:700;color:#fff;text-align:center;margin-bottom:10px}
-.answers{display:flex;gap:15px;flex-wrap:wrap;justify-content:center}
-.answer-btn{background:#333;color:#fff;border:3px solid #555;padding:15px 30px;font-size:18px;font-weight:700;border-radius:8px;cursor:pointer;transition:0.3s;font-family:inherit}
-.answer-btn:hover{background:#444;border-color:#00d2ff;transform:scale(1.05)}
-.answer-btn.correct{background:#00ff88;border-color:#00ff88;color:#000}
-.answer-btn.wrong{background:#ff3b30;border-color:#ff3b30}
-.input-answer{background:#1a1a2e;color:#fff;border:3px solid #00d2ff;padding:15px;font-size:20px;width:400px;max-width:90%;border-radius:8px;font-family:inherit}
-.submit-btn{background:#00d2ff;color:#000;border:none;padding:15px 40px;font-size:20px;font-weight:700;border-radius:8px;cursor:pointer;transition:0.3s}
-.submit-btn:hover{background:#00a8cc;transform:scale(1.05)}
-.title-screen{position:absolute;inset:0;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000}
-.title{font-family:'Press Start 2P';font-size:48px;color:#00d2ff;text-shadow:4px 4px 8px #000;margin-bottom:50px;text-align:center;line-height:1.5}
-.play-btn{font-family:'Press Start 2P';font-size:24px;background:#00ff88;color:#000;border:none;padding:20px 50px;border-radius:10px;cursor:pointer;transition:0.3s;box-shadow:0 0 20px #00ff88}
-.play-btn:hover{transform:scale(1.1);box-shadow:0 0 40px #00ff88}
-.end-screen{position:absolute;inset:0;background:rgba(0,0,0,0.95);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:1000}
-.end-msg{font-family:'Press Start 2P';font-size:56px;margin-bottom:30px;text-align:center}
-.win{color:#00ff88;text-shadow:4px 4px 8px #00ff88}
-.lose{color:#ff3b30;text-shadow:4px 4px 8px #ff3b30}
-@keyframes fx-idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-@keyframes fx-float{0%,100%{transform:translateY(0)rotate(0)}50%{transform:translateY(-15px)rotate(2deg)}}
-@keyframes fx-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-@keyframes fx-shake{0%{transform:translate(1px,1px)}20%{transform:translate(-3px,0)}40%{transform:translate(1px,-1px)}60%{transform:translate(-3px,1px)}80%{transform:translate(-1px,-1px)}100%{transform:translate(1px,-2px)}}
-@keyframes fx-glitch{0%{transform:translate(0)}20%{transform:translate(-2px,2px)}40%{transform:translate(-2px,-2px)}60%{transform:translate(2px,2px)}80%{transform:translate(2px,-2px)}100%{transform:translate(0)}}
-@keyframes fx-spin{0%{transform:rotateY(0)}100%{transform:rotateY(360deg)}}
-@keyframes fx-neon{0%,100%{opacity:1;filter:brightness(1)}50%{opacity:0.8;filter:brightness(1.5)}}
-@keyframes fx-wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
-@keyframes fx-swing{0%{transform:rotate(0)}20%{transform:rotate(15deg)}40%{transform:rotate(-10deg)}60%{transform:rotate(5deg)}80%{transform:rotate(-5deg)}100%{transform:rotate(0)}}
-@keyframes fx-bounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-30px)}60%{transform:translateY(-15px)}}
-@keyframes fx-flip{0%{transform:rotateY(0)}100%{transform:rotateY(360deg)}}
-@keyframes fx-ghost{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.05)}}
-</style>
-</head><body>
-<div id="game">
-${this.data.titleScreenOn?`<div class="title-screen" id="titleScreen"><div class="title">${(this.gameLang==='ru'?document.getElementById('i_title_ru').value:document.getElementById('i_title_en').value).replace(/\|/g,'<br>')}</div><button class="play-btn" onclick="game.start()">${this.gameLang==='ru'?document.getElementById('i_play_btn_ru').value:document.getElementById('i_play_btn_en').value}</button></div>`:''}
-<div class="hud">
-<div class="player-hud"><div class="char-name" id="heroName"></div><div class="hp-bar"><div class="hp-fill" id="heroHP"></div></div></div>
-${this.data.timerOn?'<div class="timer" id="timer">05:00</div>':''}
-<div class="player-hud right"><div class="char-name" id="bossName"></div><div class="hp-bar boss-hp"><div class="hp-fill" id="bossHP"></div></div></div>
-</div>
-<img class="char hero" id="heroChar" src="${this.data.hero.src}" style="bottom:${this.data.hero.landingOffset}%;width:${this.data.hero.size}%;filter:${this.data.hero.gP>0?`drop-shadow(0 0 ${this.data.hero.gP}px ${this.data.hero.gC})`:'none'};animation:fx-${this.data.hero.anim} ${11-this.data.hero.speed}s infinite ease-in-out">
-<img class="char boss" id="bossChar" src="${this.data.boss.src}" style="bottom:${this.data.boss.landingOffset}%;width:${this.data.boss.size}%;filter:${this.data.boss.gP>0?`drop-shadow(0 0 ${this.data.boss.gP}px ${this.data.boss.gC})`:'none'};animation:fx-${this.data.boss.anim} ${11-this.data.boss.speed}s infinite ease-in-out">
-<div class="quest-panel"><div class="question" id="question"></div><div class="answers" id="answersDiv"></div></div>
-<div class="end-screen" id="endScreen"><div class="end-msg" id="endMsg"></div></div>
-</div>
-${this.musicFile?`<audio id="bgMusic" loop><source src="${this.musicFile}"></audio>`:''}
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-<script>
-function renderMath(el){if(typeof renderMathInElement!=='undefined'){renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});}}
-const game={heroHP:100,bossHP:100,currentQ:0,timeLeft:${this.data.timer*60},timerInterval:null,
-quests:${JSON.stringify(this.quests)},
-locations:${JSON.stringify(this.locations)},
-config:{heroName:'${document.getElementById('i_h_name').value}',bossName:'${document.getElementById('i_b_name').value}',timerOn:${this.data.timerOn},titleScreenOn:${this.data.titleScreenOn},winMsg:'${this.gameLang==='ru'?document.getElementById('i_win_msg_ru').value:document.getElementById('i_win_msg_en').value}',loseMsg:'${this.gameLang==='ru'?document.getElementById('i_lose_msg_ru').value:document.getElementById('i_lose_msg_en').value}'},
-start(){if(this.config.titleScreenOn){document.getElementById('titleScreen').style.display='none';}
-document.getElementById('heroName').textContent=this.config.heroName;
-document.getElementById('bossName').textContent=this.config.bossName;
-if(this.locations.length>0){document.getElementById('game').style.backgroundImage='url('+this.locations[Math.floor(Math.random()*this.locations.length)]+')';}
-if(document.getElementById('bgMusic')){document.getElementById('bgMusic').play();}
-if(this.config.timerOn){this.startTimer();}
-this.showQuestion();},
-startTimer(){this.timerInterval=setInterval(()=>{this.timeLeft--;const m=Math.floor(this.timeLeft/60);const s=this.timeLeft%60;document.getElementById('timer').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');if(this.timeLeft<=0){this.endGame(false);}},1000);},
-showQuestion(){if(this.currentQ>=this.quests.length){this.currentQ=0;}
-const q=this.quests[this.currentQ];const qEl=document.getElementById('question');qEl.innerHTML=q.text;renderMath(qEl);
-const aDiv=document.getElementById('answersDiv');aDiv.innerHTML='';
-if(q.type==='choice'){const all=[q.correct,...q.wrong].sort(()=>Math.random()-0.5);
-all.forEach(ans=>{const btn=document.createElement('button');btn.className='answer-btn';btn.innerHTML=ans;renderMath(btn);btn.onclick=()=>this.checkAnswer(ans===q.correct);aDiv.appendChild(btn);});}else{
-const inp=document.createElement('input');inp.type='text';inp.className='input-answer';inp.placeholder='Введите ответ...';
-const btn=document.createElement('button');btn.className='submit-btn';btn.textContent='Ответить';btn.onclick=()=>this.checkAnswer(inp.value.trim().toLowerCase()===q.correct.trim().toLowerCase());
-aDiv.appendChild(inp);aDiv.appendChild(btn);}},
-checkAnswer(correct){const btns=document.querySelectorAll('.answer-btn, .submit-btn');btns.forEach(b=>b.disabled=true);
-if(correct){this.bossHP=Math.max(0,this.bossHP-20);document.getElementById('bossHP').style.width=this.bossHP+'%';
-if(this.bossHP===0){this.endGame(true);return;}}else{this.heroHP=Math.max(0,this.heroHP-20);document.getElementById('heroHP').style.width=this.heroHP+'%';
-if(this.heroHP===0){this.endGame(false);return;}}
-setTimeout(()=>{this.currentQ++;this.showQuestion();},1500);},
-endGame(win){clearInterval(this.timerInterval);const es=document.getElementById('endScreen');const msg=document.getElementById('endMsg');msg.textContent=win?this.config.winMsg:this.config.loseMsg;msg.className='end-msg '+(win?'win':'lose');es.style.display='flex';}};
-${!this.data.titleScreenOn?'window.onload=()=>game.start();':''}
-</script></body></html>`;
+
+        updatePreview(){
+            const h=this.data.hero;
+            const b=this.data.boss;
             
-            const ta=document.getElementById('hidden_code');
-            ta.value=code;
-            ta.select();
-            document.execCommand('copy');
-            const btn=document.getElementById('b_gen');
-            btn.textContent=''КОД СКОПИРОВАН ✓';
-            setTimeout(()=>{btn.textContent='СКОПИРОВАТЬ КОД';},2000);
+            document.getElementById('stage_bg').style.backgroundImage=this.locations.length>0?`url(${this.locations[0].data})`:'none';
+            document.getElementById('p_h_name').innerText=document.getElementById('i_h_name').value;
+            document.getElementById('p_b_name').innerText=document.getElementById('i_b_name').value;
+            document.getElementById('p_timer').style.display=this.data.timerOn?'block':'none';
+            document.getElementById('p_timer').innerText=this.data.timerOn?(this.data.timer<10?'0'+this.data.timer:this.data.timer)+':00':'';
+            
+            const currentQ=this.quests[this.previewQuestIndex]||{text:'Настройте задания...'};
+            document.getElementById('prev_q_text').innerText=(this.quests.length>0?`(${this.previewQuestIndex+1}/${this.quests.length}) `:'')+currentQ.text;
+            const btnsDiv=document.getElementById('prev_q_btns');
+            btnsDiv.innerHTML='';
+            const prevBtn=document.getElementById('prev_q_btn');
+            prevBtn.disabled=this.previewQuestIndex===0;
+            const nextBtn=document.getElementById('next_q_btn');
+            nextBtn.disabled=this.previewQuestIndex>=this.quests.length-1||this.quests.length===0;
+
+            if(this.quests.length > 0 && currentQ.type){ // Check currentQ.type to avoid errors if quest is undefined
+                if(currentQ.type==='choice'){
+                    let answers=[{t:currentQ.correct,c:true}];
+                    if(currentQ.wrongs[0])answers.push({t:currentQ.wrongs[0],c:false});
+                    if(currentQ.wrongs[1])answers.push({t:currentQ.wrongs[1],c:false});
+                    answers.sort(()=>Math.random()-0.5);
+                    let btnsHTML=answers.map(a=>`<div class="q-dummy-btn" onclick="app.previewAnswer(this,${a.c})">${a.t}</div>`).join('');
+                    btnsDiv.innerHTML=btnsHTML;
+                }else{ // Type is 'input'
+                    btnsDiv.innerHTML=`<input id="preview_input_ans" type="text" class="fx-input" style="width:150px; text-align:center;" placeholder="Ваш ответ..."><div class="q-dummy-btn" onclick="app.previewInputAnswer()">OK</div>`;
+                }
+            }
+            
+            const apply=(elId,d)=>{
+                const img=document.getElementById(elId);
+                const charBox = img.parentNode;
+                img.src=d.src;
+                charBox.style.bottom = d.landingOffset + '%'; 
+                img.style.width = d.size + '%';
+                img.style.height = 'auto';
+                img.style.filter=d.gP>0?`drop-shadow(0 0 ${d.gP}px ${d.gC})`:'none';
+                let dur=(11-d.speed)*0.5;
+                if(['shake','wobble'].includes(d.anim))dur*=.5;
+                let timing='ease-in-out';
+                if(['glitch'].includes(d.anim))timing=`steps(${Math.round(dur*10)})`;
+                if(['shake','spin','flip'].includes(d.anim))timing='linear';
+                img.style.animation=d.anim!=='none'?`fx-${d.anim} ${dur}s infinite ${timing}`:'none';
+                img.style.transformOrigin=d.anim==='swing'?'top center':'center';
+            };
+            apply('img_hero',h);
+            apply('img_boss',b);
+        },
+        previewAnswer(btn,isCorrect){btn.classList.add(isCorrect?'correct':'wrong');setTimeout(()=>btn.classList.remove('correct','wrong'),500);},
+        previewInputAnswer(){
+            const input=document.getElementById('preview_input_ans');
+            const q=this.quests[this.previewQuestIndex];
+            if(!input||!q)return;
+            let isCorrect = false;
+
+            if (q.isMath) {
+                const userAnswer = this.evaluateMathExpression(input.value.trim());
+                const correctAnswer = this.evaluateMathExpression(q.correctInp.trim());
+
+                const EPSILON = 1e-9; // Tolerance for floating point comparisons
+
+                if (userAnswer.error || correctAnswer.error || isNaN(userAnswer.value) || isNaN(correctAnswer.value)) {
+                    isCorrect = false;
+                } else {
+                    isCorrect = Math.abs(userAnswer.value - correctAnswer.value) < EPSILON;
+                }
+            } else {
+                isCorrect = input.value.trim().toLowerCase() === q.correctInp.trim().toLowerCase();
+            }
+
+            input.classList.add(isCorrect?'correct':'wrong');
+            setTimeout(()=>input.classList.remove('correct','wrong'),800);
+        },
+        generate(){
+            const d=this.data;
+            const langData={
+                ru:{title:document.getElementById('i_title_ru').value,win:document.getElementById('i_win_msg_ru').value,lose:document.getElementById('i_lose_msg_ru').value,play:document.getElementById('i_play_btn_ru').value},
+                en:{title:document.getElementById('i_title_en').value,win:document.getElementById('i_win_msg_en').value,lose:document.getElementById('i_lose_msg_en').value,play:document.getElementById('i_play_btn_en').value}
+            };
+            const qData={hName:document.getElementById('i_h_name').value,bName:document.getElementById('i_b_name').value};
+            const getAnimRule=o=>{if(o.anim==='none')return'';let dur=(11-o.speed)*0.5;if(['shake','wobble'].includes(o.anim))dur*=.5;let timing='ease-in-out';if(['glitch'].includes(o.anim))timing=`steps(${Math.round(dur*10)})`;if(['shake','spin','flip'].includes(o.anim))timing='linear';return`animation:fx-${o.anim} ${dur}s infinite ${timing};transform-origin:${o.anim==='swing'?'top center':'center'};`;};
+            
+            const hImgStyle=`width:${d.hero.size}%; height:auto; filter:${d.hero.gP>0?`drop-shadow(0 0 ${d.hero.gP}px ${d.hero.gC})`:''};${getAnimRule(d.hero)}`;
+            const bImgStyle=`width:${d.boss.size}%; height:auto; filter:${d.boss.gP>0?`drop-shadow(0 0 ${d.boss.gP}px ${d.boss.gC})`:''};${getAnimRule(d.boss)}`;
+
+            const generatedOverlay = d.titleScreenOn ? `<div class="overlay" id="start-overlay"><div class="big-title">${langData[this.gameLang].title.replace(/\|/g, '<br>')}</div><button class="play-btn" onclick="startGame()"> ${langData[this.gameLang].play}</button></div>` : '';
+
+            // This script block will be injected into the generated iframe
+            const script=`<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.1/math.min.js"></script><script>
+let timerVal=${d.timer*60},timerOn=${d.timerOn},audioCtx=null,currentQIndex=-1,locIndex=0,isAnswered=false,battleState=50,isGameOver=false,gameStarted=false;
+const quests=${JSON.stringify(this.quests)},locations=${JSON.stringify(this.locations.map(l=>l.data))},langPack=${JSON.stringify(langData[this.gameLang])};
+const step=50/((quests.length||1));
+function initAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();}
+function beep(type){if(!audioCtx)return;const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);if(type==='win'){o.frequency.value=600;o.type='sine';g.gain.setValueAtTime(0.1,audioCtx.currentTime);o.start();o.frequency.exponentialRampToValueAtTime(1200,audioCtx.currentTime+0.1);g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.3);o.stop(audioCtx.currentTime+0.3);}else if(type==='fail'){o.frequency.value=150;o.type='sawtooth';g.gain.setValueAtTime(0.1,audioCtx.currentTime);o.start();g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.4);o.stop(audioCtx.currentTime+0.4);}else if(type==='hit'){o.frequency.setValueAtTime(400,audioCtx.currentTime);o.type='square';g.gain.setValueAtTime(0.1,audioCtx.currentTime);o.start();o.frequency.exponentialRampToValueAtTime(100,audioCtx.currentTime+0.2);g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.2);o.stop(audioCtx.currentTime+0.3);}}
+function activateGame(){if(gameStarted)return;gameStarted=true;initAudio();const music=document.getElementById('bg-music');if(music){music.volume=0.3;let playAttempt=music.play();if(playAttempt!==undefined){playAttempt.catch(error=>{console.log('Autoplay was prevented. User interaction required.');});}
+const muteBtn=document.getElementById('mute-btn');const pauseBtn=document.getElementById('pause-btn');if(muteBtn)muteBtn.onclick=()=>{music.muted=!music.muted;muteBtn.innerText=music.muted?'🔇':'🔊';};if(pauseBtn)pauseBtn.onclick=()=>{if(music.paused){music.play();pauseBtn.innerText='⏸️';}else{music.pause();pauseBtn.innerText='▶️';}};}
+if(timerOn)startTimer();}
+function startGame(){${d.titleScreenOn?"document.getElementById('start-overlay').style.display='none';":""}
+document.getElementById('game-root').style.opacity='1';activateGame();loadNextQuestion();}
+function startTimer(){const e=document.getElementById('timer-disp');const i=setInterval(()=>{if(isGameOver){clearInterval(i);return;}
+timerVal--;let m=Math.floor(timerVal/60);let s=timerVal%60;e.innerText=(m<10?'0'+m:m)+':'+(s<10?'0'+s:s);if(timerVal<=0){clearInterval(i);endGame(battleState>50);}},1000);}
+function updatePositionsAndProgress(){const heroWrap=document.getElementById('hero-wrap');const bossWrap=document.getElementById('boss-wrap');const barH=document.getElementById('bar-h');const barB=document.getElementById('bar-b');const heroAdvantage=battleState-50;const heroMove=Math.max(0,heroAdvantage)*2;const bossMove=Math.max(0,-heroAdvantage)*2;heroWrap.style.transform=\`translateX(\${heroMove}%)\`;bossWrap.style.transform=\`translateX(-\${bossMove}%)\`;barH.style.width=\`\${battleState}%\`;barB.style.width=\`\${100-battleState}%\`;if(battleState>=100)endGame(true);else if(battleState<=0)endGame(false);}
+function loadNextQuestion(){isAnswered=false;currentQIndex++;const isGameEnd=currentQIndex>=quests.length;if(isGameEnd){endGame(battleState>50);return;}
+if(locations.length>0&&currentQIndex>0){locIndex=(locIndex+1)%locations.length;document.body.style.backgroundImage=\`url(\${locations[locIndex]})\`;}
+const q=quests[currentQIndex];document.getElementById('q-text').innerText=q.text;const p=document.getElementById('q-inputs');let html='';if(q.type==='choice'){const ans=[{t:q.correct,c:true}];q.wrongs.forEach(w=>{if(w)ans.push({t:w,c:false});});ans.sort(()=>Math.random()-0.5);html=\`<div class="btns">\${ans.map(a=>\`<button data-correct="\${a.c}" class="game-btn" onclick="checkChoice(this,\${a.c})">\${a.t}</button>\`).join('')}</div>\`;}else{html=\`<div class="inp-area"><div class="inp-row"><input type="text" id="inp-ans" placeholder="..." autocomplete="off"><button class="game-btn" onclick="checkInput()">OK</button></div></div>\`;}
+p.innerHTML=html;}
+
+function evaluateMathExpression(expression) {
+    try {
+        const result = math.evaluate(expression);
+        if (typeof result === 'number') {
+            return { value: result, error: null };
+        } else if (result && typeof result.valueOf === 'function' && typeof result.valueOf() === 'number') {
+             return { value: result.valueOf(), error: null };
+        }
+        return { value: NaN, error: 'Result is not a number.' };
+    } catch (e) {
+        return { value: NaN, error: e.message };
+    }
+}
+
+function showScore(targetId,text,color){const scorePopup=document.getElementById(targetId.replace('-wrap','-score-popup'));const targetEl=document.getElementById(targetId);const targetRect=targetEl.getBoundingClientRect();scorePopup.innerText=text;scorePopup.style.color=color;scorePopup.style.textShadow=\`0 0 10px \${color}\`;scorePopup.style.left=targetRect.left+targetRect.width/2+'px';scorePopup.style.top=targetRect.top-20+'px';scorePopup.classList.add('show');setTimeout(()=>{scorePopup.classList.remove('show');},1000);}
+function animateAttack(attackerId,targetId,color,scoreText){const projectile=document.getElementById('projectile');const attacker=document.getElementById(attackerId);const target=document.getElementById(targetId);const targetImg=document.getElementById(targetId.replace('-wrap','-img'));const battleGround=document.querySelector('.battle-ground');const startCharRect=attacker.getBoundingClientRect();const targetCharRect=target.getBoundingClientRect();const battleGroundRect=battleGround.getBoundingClientRect();const startX=(startCharRect.left+startCharRect.width/2)-battleGroundRect.left;const startY=(startCharRect.top+startCharRect.height/2)-battleGroundRect.top;const endX=(targetCharRect.left+targetCharRect.width/2)-battleGroundRect.left;const endY=(targetCharRect.top+targetCharRect.height/2)-battleGroundRect.top;projectile.style.background=color;projectile.style.boxShadow=\`0 0 15px \${color}, 0 0 25px \${color}\`;projectile.style.left=startX+'px';projectile.style.top=startY+'px';projectile.style.opacity='1';projectile.style.transform='scale(1)';setTimeout(()=>{projectile.style.left=endX+'px';projectile.style.top=endY+'px';},10);setTimeout(()=>{beep('hit');projectile.style.transform='scale(3)';projectile.style.opacity='0';targetImg.style.animation='fx-shake 0.4s';targetImg.style.filter=\`drop-shadow(0 0 25px \${color})\`;showScore(attackerId,scoreText,'var(--green)');setTimeout(()=>{targetImg.style.animation='';targetImg.style.filter='';},400);},550);}
+function checkChoice(b,isCor){if(!gameStarted)activateGame();if(isAnswered)return;isAnswered=true;document.querySelectorAll('.btns .game-btn').forEach(btn=>btn.disabled=true);if(isCor){handleCorrect(b);}else{handleWrong(b);const correctBtn=document.querySelector('.game-btn[data-correct=\\"true\\"]');if(correctBtn)correctBtn.style.background='var(--green)';}}
+function checkInput(){
+    if(!gameStarted)activateGame();
+    if(isAnswered)return;
+    isAnswered=true;
+    const i=document.getElementById('inp-ans');
+    i.disabled=true;
+    document.querySelector('.inp-area .game-btn').disabled=true;
+    const currentQ = quests[currentQIndex];
+    let isCorrect = false;
+
+    // Remove any previous hint
+    const oldHint = i.closest('.inp-area').querySelector('.correct-answer-hint');
+    if (oldHint) oldHint.remove();
+
+    if (currentQ.isMath) {
+        const userAnswer = evaluateMathExpression(i.value.trim());
+        const correctAnswer = evaluateMathExpression(currentQ.correctInp.trim());
+
+        const EPSILON = 1e-9; // Tolerance for floating point comparisons
+
+        if (userAnswer.error || correctAnswer.error || isNaN(userAnswer.value) || isNaN(correctAnswer.value)) {
+            isCorrect = false;
+            const hint = document.createElement('div');
+            hint.className = 'correct-answer-hint';
+            hint.style.color = 'var(--red)';
+            hint.innerText = 'Неверный формат или некорректное выражение!'; // More specific error
+            i.closest('.inp-area').appendChild(hint);
+        } else {
+            isCorrect = Math.abs(userAnswer.value - correctAnswer.value) < EPSILON;
+        }
+    } else {
+        isCorrect = i.value.trim().toLowerCase() === (currentQ.correctInp || '').trim().toLowerCase();
+    }
+
+    if(isCorrect){
+        handleCorrect(i);
+    }else{
+        handleWrong(i);
+        // Only show hint if not already shown an error message for math expression parsing
+        if (!currentQ.isMath || (currentQ.isMath && !i.closest('.inp-area').querySelector('.correct-answer-hint[style*="var(--red)"]'))) {
+            const hint = document.createElement('div');
+            hint.className = 'correct-answer-hint';
+            hint.innerText='Верный ответ: ' + currentQ.correctInp;
+            i.closest('.inp-area').appendChild(hint);
+        }
+    }
+}
+function handleCorrect(el){document.body.style.pointerEvents='none';animateAttack('hero-wrap','boss-wrap','var(--green)','+100');if(el.tagName==='BUTTON'){el.style.background='var(--green)';el.style.color='#000';}else{el.style.borderColor='var(--green)';}setTimeout(()=>{battleState=Math.min(100,battleState+step);updatePositionsAndProgress();document.body.style.pointerEvents='';if(battleState<100)loadNextQuestion();},1000);}
+function handleWrong(el){document.body.style.pointerEvents='none';animateAttack('boss-wrap','hero-wrap','var(--red)','+100');if(el.tagName==='BUTTON'){el.style.background='var(--red)';}else{el.style.borderColor='var(--red)';}setTimeout(()=>{battleState=Math.max(0,battleState-step);updatePositionsAndProgress();document.body.style.pointerEvents='';if(battleState>0)loadNextQuestion();},1000);}
+function endGame(didWin){if(isGameOver)return;isGameOver=true;document.body.style.pointerEvents='none';if(document.getElementById('timer-wrap'))document.getElementById('timer-wrap').style.display='none';const p=document.getElementById('q-panel');p.innerHTML="";let msg,color,winnerImg,winnerId;if(didWin===true){msg=langPack.win;color='var(--green)';document.getElementById('boss-img').style.opacity='0';winnerImg=document.getElementById('hero-img');winnerId='hero-wrap';}else{msg=langPack.lose;color='var(--red)';document.getElementById('hero-img').style.opacity='0';winnerImg=document.getElementById('boss-img');winnerId='boss-wrap';}
+if(winnerImg){winnerImg.style.animation='fx-bounce 1s ease-in-out infinite';showScore(winnerId,'+1000','var(--green)');}
+p.innerHTML=\`<h2 style='font-size:40px;color:\${color};text-shadow:0 0 20px \${color}'>\${msg}</h2>\`;}
+function initGame(){if(${d.titleScreenOn}){}else{document.getElementById('game-root').style.opacity='1';loadNextQuestion();}}
+document.addEventListener('DOMContentLoaded',initGame);
+<\/script>`;
+            const html=`<!DOCTYPE html><html><head><style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@700&family=Montserrat:wght@900&display=swap');
+:root{ --primary: #8A2BE2; --red: #ff3b30; --green: #00FF88; --magenta: #e521e5;}
+body{margin:0;overflow:hidden;font-family:'Rajdhani',sans-serif;user-select:none;width:100%;height:100vh;background-color:#12101E;background-size:cover;background-position:center;transition:background-image 0.5s ease-in-out; background-image:${this.locations.length>0?`url(${this.locations[0].data})`:'none'}; display: flex; align-items: center; justify-content: center;}
+* { box-sizing: border-box; }
+@keyframes float-up-fade { 0% { transform: translateY(0) scale(0.8); opacity: 1; } 100% { transform: translateY(-60px) scale(1.2); opacity: 0; } }
+@keyframes fx-idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes fx-float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-15px) rotate(2deg)}}@keyframes fx-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}@keyframes fx-shake{0%{transform:translate(1px, 1px)}20%{transform:translate(-3px, 0px)}40%{transform:translate(1px, -1px)}60%{transform:translate(-3px, 1px)}80%{transform:translate(-1px, -1px)}100%{transform:translate(1px, -2px)}}@keyframes fx-glitch{0%{transform:translate(0)}20%{transform:translate(-2px, 2px)}40%{transform:translate(-2px, -2px)}60%{transform:translate(2px, 2px)}80%{transform:translate(2px, -2px)}100%{transform:translate(0)}}@keyframes fx-spin{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}@keyframes fx-neon{0%,100%{opacity:1;filter:brightness(1)}50%{opacity:0.8;filter:brightness(1.5)}}@keyframes fx-wobble{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}@keyframes fx-swing{0%{transform:rotate(0deg)}20%{transform:rotate(15deg)}40%{transform:rotate(-10deg)}60%{transform:rotate(5deg)}80%{transform:rotate(-5deg)}100%{transform:rotate(0deg)}}@keyframes fx-bounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-30px)}60%{transform:translateY(-15px)}}@keyframes fx-flip{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}@keyframes fx-ghost{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.05)}}
+.scene{
+    display:flex;flex-direction:column;justify-content:space-between;
+    position:relative;opacity:${!d.titleScreenOn ? '1' : '0'};transition:opacity 0.5s;
+    background-image:linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3));
+    width: 100%;
+    height: 100%;
+    max-width: calc(100vh * 16 / 9);
+    max-height: calc(100vw * 9 / 16);
+    aspect-ratio: 16 / 9;
+}
+.overlay{position:fixed;inset:0;background:#12101E;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.big-title{font-family:'Press Start 2P',cursive;font-size:clamp(24px,5vw,40px);color:#00e5ff;text-align:center;margin-bottom:40px;text-shadow:4px 4px 0 var(--primary);line-height:1.5;}
+.play-btn{background:transparent;color:#fff;padding:15px 50px;border:2px solid #fff;border-radius:50px;font-size:24px;font-weight:900;cursor:pointer;transition:0.3s;animation:fx-pulse 2s infinite;}
+.play-btn:hover{background:#00e5ff;color:#000;border-color:#00e5ff;box-shadow:0 0 30px #00e5ff;}
+.hud{padding:10px 15px;display:flex;justify-content:space-between;align-items:flex-start;width:100%;z-index:10;gap:10px;}
+.ui-element { background:rgba(35,31,52,0.8); border-radius: 20px; box-shadow: 0 0 10px var(--primary), inset 0 0 8px rgba(0,0,0,0.5); padding: 8px;}
+.player-info { display:flex; align-items: center; gap: 10px; flex: 1; max-width: 350px;}
+.char-name{color:#fff;font-weight:700;font-size:18px;text-shadow:1px 1px 0 #000;white-space:nowrap; }
+.hp-bar{width:100%;height:14px;background:rgba(0,0,0,0.7);border-radius:7px;border:1px solid #111;overflow:hidden;}
+.hp-fill{height:100%;transition:width 0.5s ease-out, background-color 0.5s; border-radius: 7px;}
+.timer-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px;}
+.timer{ flex-shrink:0; font-family:'Rajdhani',sans-serif;font-weight:700;font-size:24px;color:#fff; letter-spacing: 2px; text-shadow: 0 0 8px #fff; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding-top: 5px; background:rgba(35,31,52,0.8); border: 2px solid var(--primary); box-shadow: 0 0 10px var(--primary); }
+.media-controls { display: flex; gap: 10px; }
+.media-btn { background: rgba(35,31,52,0.8); color: #fff; border: 1px solid var(--primary); border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; display:flex; align-items: center; justify-content: center;}
+.stage-area{flex:1;position:relative;overflow:hidden;}
+.battle-ground { position: absolute; inset: 0 5%; bottom: 0; padding-bottom: 22%; }
+.char-wrap{
+    width:35%; height:auto; display:flex; align-items:flex-end; justify-content:center; 
+    position:absolute; transition:transform 1s ease-in-out, opacity 0.5s;
+}
+.hero-wrap{left:5%;}
+.boss-wrap{right:5%;}
+.char{max-width:100%;max-height:100%;object-fit:contain;transition:filter 0.5s, opacity 0.5s;}
+#projectile { position: absolute; width: 30px; height: 30px; border-radius: 50%; opacity: 0; z-index: 100; transition: left 0.5s linear, top 0.5s linear, transform 0.2s, opacity 0.2s; pointer-events: none; transform-origin: center; margin-left: -15px; margin-top: -15px; }
+.score-popup{position:fixed;z-index:101;opacity:0;font-family:'Press Start 2P',cursive;font-size:20px;transform:translateX(-50%);pointer-events:none;}
+.score-popup.show{animation:float-up-fade 1s ease-out forwards;}
+.ui-panel{position:absolute; bottom:0; left:0; right:0; background:rgba(18,16,30,0.95);padding:20px;border-top:4px solid #00e5ff;display:flex;flex-direction:column;align-items:center;gap:15px;min-height:20%;box-shadow:0 -10px 50px rgba(0,0,0,0.5);z-index:20;}
+.q-text{color:#fff;font-size:24px;font-weight:700;text-align:center;font-family:'Montserrat',sans-serif;}
+.btns{display:flex;gap:15px;flex-wrap:wrap;justify-content:center;width:100%;}
+.game-btn{background:#333;border:2px solid #555;color:#fff;padding:15px 30px;font-family:inherit;font-weight:700;font-size:18px;cursor:pointer;text-transform:uppercase;border-radius:8px;transition:0.1s;min-width:150px;}
+.game-btn:hover{background:#555;border-color:#fff;transform:translateY(-2px);}
+.game-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+.inp-area{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.inp-row{display:flex;gap:10px;}
+input[type=text]{padding:15px;border-radius:6px;border:2px solid #fff;font-family:inherit;font-weight:700;background:#000;color:#fff;font-size:18px;outline:none; transition: 0.3s;}
+.correct-answer-hint { color: var(--green); margin-top: 5px; font-size: 16px; font-weight: 700; }
+</style></head><body>
+${this.musicFile?`<audio id="bg-music" src="${this.musicFile.data}" loop></audio>`:''}
+<div id="projectile"></div>
+${generatedOverlay}
+<div class="scene" id="game-root">
+<div class="hud">
+    <div class="player-info ui-element"><span class="char-name">${qData.hName}</span><div class="hp-bar"><div id="bar-h" class="hp-fill" style="background:var(--green);width:50%;"></div></div></div>
+    <div class="timer-wrap" id="timer-wrap" style="display:${(d.timerOn || this.musicFile)?'flex':'none'}">
+        ${d.timerOn ? `<div class="timer" id="timer-disp">${(d.timer<10?'0'+d.timer:d.timer)+':00'}</div>` : ''}
+        ${this.musicFile?`<div class="media-controls"><button id="mute-btn" class="media-btn">🔊</button><button id="pause-btn" class="media-btn">⏸️</button></div>`:''}
+    </div>
+    <div class="player-info ui-element"><span class="char-name">${qData.bName}</span><div class="hp-bar"><div id="bar-b" class="hp-fill" style="background:var(--red);width:50%;"></div></div></div>
+</div>
+<div class="stage-area"><div class="battle-ground"><div class="score-popup" id="hero-score-popup"></div><div class="score-popup" id="boss-score-popup"></div>
+    <div class="char-wrap hero-wrap" id="hero-wrap" style="bottom:${d.hero.landingOffset}%;">
+        <img src="${d.hero.src}" class="char" id="hero-img" style="${hImgStyle}">
+    </div>
+    <div class="char-wrap boss-wrap" id="boss-wrap" style="bottom:${d.boss.landingOffset}%;">
+        <img src="${d.boss.src}" class="char" id="boss-img" style="${bImgStyle}">
+    </div>
+</div></div>
+<div class="ui-panel" id="q-panel"><div class="q-text" id="q-text"></div><div id="q-inputs"></div></div>
+</div>${script}</body></html>`;
+            const area=document.getElementById('hidden_code');area.value=`<iframe srcdoc="${html.replace(/"/g,'&quot;')}" width="100%" height="100%" frameborder="0" style="background:transparent;display:block"></iframe>`;area.select();document.execCommand('copy');const btn=document.getElementById('b_gen');const old=btn.innerText;btn.innerText="ГОТОВО!";btn.style.background="#fff";setTimeout(()=>{btn.innerText=old;btn.style.background="";},1500);
         }
     };
-    
-    // Инициализация при загрузке
-    window.addEventListener('DOMContentLoaded', ()=>{
-        app.init();
-        
-        // Загрузка KaTeX библиотеки с задержкой для корректной инициализации
-        setTimeout(()=>{
-            if(typeof renderMathInElement !== 'undefined'){
-                console.log('✓ KaTeX загружен успешно');
-            }
-        }, 500);
-    });
-    </script>
+    app.init();
+</script>
 </div>
