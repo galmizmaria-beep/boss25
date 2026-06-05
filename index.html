@@ -178,8 +178,8 @@
             this.renderAnims('hero');
             this.renderAnims('boss');
             this.bindEvents();
-            this.addQuest(true);
-            this.updatePreview();
+            // this.addQuest(true); // Убрано автоматическое добавление первого задания
+            this.renderQuestList(); // Рендерим (пустой) список заданий и обновляем предпросмотр
         },
         setMainTab(t){document.querySelectorAll('.main-tab-link').forEach(e=>e.classList.remove('active'));document.querySelector(`[onclick="app.setMainTab('${t}')"]`).classList.add('active');document.getElementById('sec_chars').classList.toggle('show',t==='chars');document.getElementById('sec_quests').classList.toggle('show',t==='quests');},
         setCharTab(t){document.querySelector('#sec_chars .sub-tab-link.active').classList.remove('active');document.querySelector(`[onclick="app.setCharTab('${t}')"]`).classList.add('active');document.getElementById('cfg_hero').style.display=t==='hero'?'block':'none';document.getElementById('cfg_boss').style.display=t==='boss'?'block':'none';},
@@ -279,7 +279,6 @@
             }
         },
         renderLocationList(){const c=document.getElementById('location-list');c.innerHTML='';this.locations.forEach((loc,i)=>{const item=document.createElement('div');item.className='list-item';item.innerHTML=`<span>${i+1}. ${loc.name}</span><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteLocation(${i})">X</button>`;c.appendChild(item);});c.style.display=this.locations.length>0?'flex':'none';this.updatePreview();},
-        deleteLocation(i){this.locations.splice(i,1);this.renderLocationList();},
         handleMusic(file){if(file){const r=new FileReader();r.onload=e=>{this.musicFile={name:file.name,data:e.target.result};document.getElementById('music_name').textContent='Файл: '+file.name;};r.readAsDataURL(file);}},
         bindEvents(){
             document.getElementById('f_hero').onchange=e=>this.handleImage(e.target.files[0],'hero');
@@ -330,7 +329,12 @@
             });
             this.updatePreview();
         },
-        addQuest(isFirst=false){const newQ={type:'choice',text:'$a^2+b^2=c^2$',correct:'$c^2$',wrongs:['$a^2$','$b^2$'],correctInp:'c^2'};this.quests.push(newQ);if(!isFirst)this.renderQuestList();this.editQuest(this.quests.length-1);},
+        addQuest(){ // Убрал параметр isFirst, так как вызов будет только по кнопке
+            const newQ={type:'choice',text:'$a^2+b^2=c^2$',correct:'$c^2$',wrongs:['$a^2$','$b^2$'],correctInp:'c^2'};
+            this.quests.push(newQ);
+            this.renderQuestList();
+            this.editQuest(this.quests.length-1);
+        },
         editQuest(index){this.currentQuestIndex=index;const q=this.quests[index];document.getElementById('editor-title').innerText=`ЗАДАНИЕ #${index+1}`;this.setQType(q.type);document.getElementById('i_q_text').value=q.text;document.getElementById('i_c_ans').value=q.correct;document.getElementById('i_w1').value=q.wrongs[0];document.getElementById('i_w2').value=q.wrongs[1];document.getElementById('i_in_ans').value=q.correctInp;document.getElementById('quest-list-container').style.display='none';document.getElementById('quest-editor-panel').style.display='block';},
         saveQuest(){if(this.currentQuestIndex===-1)return;const q=this.quests[this.currentQuestIndex];q.type=document.querySelector('#quest-editor-panel .sub-tab-link.active').id==='b_choice'?'choice':'input';q.text=document.getElementById('i_q_text').value;if(q.type==='choice'){q.correct=document.getElementById('i_c_ans').value;q.wrongs=[document.getElementById('i_w1').value,document.getElementById('i_w2').value];}else{q.correctInp=document.getElementById('i_in_ans').value;}this.previewQuestIndex=this.currentQuestIndex;document.getElementById('quest-list-container').style.display='block';document.getElementById('quest-editor-panel').style.display='none';this.renderQuestList();},
         deleteQuest(index){if(confirm(`Удалить задание #${index+1}?`)){this.quests.splice(index,1);this.previewQuestIndex=0;this.renderQuestList();}},
@@ -360,25 +364,21 @@
             document.getElementById('p_timer').style.display=this.data.timerOn?'block':'none';
             document.getElementById('p_timer').innerText=this.data.timerOn?(this.data.timer<10?'0'+this.data.timer:this.data.timer)+':00':'';
             
-            const currentQ=this.quests[this.previewQuestIndex]||{text:'Настройте задания...'};
-            
             const qTextElement = document.getElementById('prev_q_text');
-            if (this.quests.length > 0) {
-                const prefix = `(${this.previewQuestIndex + 1}/${this.quests.length}) `;
-                // ИСПРАВЛЕНИЕ #1: Замена двухступенчатого обновления на однократное через innerHTML
-                qTextElement.innerHTML = prefix + this.renderLatex(currentQ.text || '');
-            } else {
-                qTextElement.innerText = "Настройте задания...";
-            }
-
             const btnsDiv=document.getElementById('prev_q_btns');
             btnsDiv.innerHTML='';
             const prevBtn=document.getElementById('prev_q_btn');
-            prevBtn.disabled=this.previewQuestIndex===0;
             const nextBtn=document.getElementById('next_q_btn');
-            nextBtn.disabled=this.previewQuestIndex>=this.quests.length-1||this.quests.length===0;
 
-            if(this.quests.length>0){
+            if(this.quests.length > 0){
+                const currentQ=this.quests[this.previewQuestIndex];
+                const prefix = `(${this.previewQuestIndex + 1}/${this.quests.length}) `;
+                // ИСПРАВЛЕНИЕ #1: Замена двухступенчатого обновления на однократное через innerHTML
+                qTextElement.innerHTML = prefix + this.renderLatex(currentQ.text || '');
+
+                prevBtn.disabled=this.previewQuestIndex===0;
+                nextBtn.disabled=this.previewQuestIndex>=this.quests.length-1;
+
                 if(currentQ.type==='choice'){
                     let answers=[{t:currentQ.correct,c:true}];
                     if(currentQ.wrongs[0])answers.push({t:currentQ.wrongs[0],c:false});
@@ -389,6 +389,10 @@
                 }else{
                     btnsDiv.innerHTML=`<input id="preview_input_ans" type="text" class="fx-input" style="width:150px; text-align:center;" placeholder="Ваш ответ..."><div class="q-dummy-btn" onclick="app.previewInputAnswer()">OK</div>`;
                 }
+            } else {
+                qTextElement.innerText = "Добавьте задание, чтобы начать.";
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
             }
             
             const apply=(elId,d)=>{
