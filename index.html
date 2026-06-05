@@ -336,11 +336,8 @@
         
         renderLatex(text) {
             if (typeof katex === 'undefined' || !text) return text;
-            return text.replace(/\$\$([\s\S]+?)\$\$/g, (match, formula) => {
-                return katex.renderToString(formula, { displayMode: true, throwOnError: false });
-            }).replace(/\$([\s\S]+?)\$/g, (match, formula) => {
-                return katex.renderToString(formula, { displayMode: false, throwOnError: false });
-            });
+            return text.replace(/\$\$([^$]+)\$\$/g, (match, formula) => katex.renderToString(formula, { throwOnError: false, displayMode: true }))
+                       .replace(/\$([^$]+)\$/g, (match, formula) => katex.renderToString(formula, { throwOnError: false, displayMode: false }));
         },
 
         updatePreview(){
@@ -356,7 +353,13 @@
             const currentQ=this.quests[this.previewQuestIndex]||{text:'Настройте задания...'};
             
             const qTextElement = document.getElementById('prev_q_text');
-            qTextElement.innerHTML = this.renderLatex((this.quests.length>0?`(${this.previewQuestIndex+1}/${this.quests.length}) `:'')+currentQ.text);
+            if (this.quests.length > 0) {
+                const prefix = `(${this.previewQuestIndex + 1}/${this.quests.length}) `;
+                const renderedText = this.renderLatex(currentQ.text || '');
+                qTextElement.innerHTML = prefix + renderedText;
+            } else {
+                qTextElement.innerText = "Настройте задания...";
+            }
 
             const btnsDiv=document.getElementById('prev_q_btns');
             btnsDiv.innerHTML='';
@@ -422,12 +425,16 @@ const quests=${JSON.stringify(this.quests)},locations=${JSON.stringify(this.loca
 const step=50/((quests.length||1));
 function renderKatexText(text) {
     if (typeof katex === 'undefined' || !text) return text;
-    // Un-escape backslashes that JSON.stringify might have added
-    const unescapedText = text.replace(/\\\\/g, '\\');
-    return unescapedText.replace(/\\$\\$([\\s\\S]+?)\\$\\$/g, (match, formula) => {
-        return katex.renderToString(formula, { displayMode: true, throwOnError: false });
-    }).replace(/\\$([\\s\\S]+?)\\$/g, (match, formula) => {
-        return katex.renderToString(formula, { displayMode: false, throwOnError: false });
+    // This regex looks for $$...$$ or $...$ and replaces it. It's safer than splitting.
+    // It handles multiple formulas in one string correctly.
+    return text.replace(/\\$\\$([\\s\\S]*?)\\$\\$|\\$([\\s\\S]*?)\\$/g, (match, display, inline) => {
+        const formula = display || inline;
+        const isDisplay = !!display;
+        try {
+            return katex.renderToString(formula, { displayMode: isDisplay, throwOnError: false });
+        } catch (e) {
+            return match; // On error, return the original text ($...$)
+        }
     });
 }
 function initAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();}
@@ -443,10 +450,9 @@ function updatePositionsAndProgress(){const heroWrap=document.getElementById('he
 function loadNextQuestion(){isAnswered=false;currentQIndex++;const isGameEnd=currentQIndex>=quests.length;if(isGameEnd){endGame(battleState>50);return;}
 if(locations.length>0&&currentQIndex>0){locIndex=(locIndex+1)%locations.length;document.body.style.backgroundImage=\`url(\${locations[locIndex]})\`;}
 const q=quests[currentQIndex];
-const qTextEl=document.getElementById('q-text');
+document.getElementById('q-text').innerHTML=renderKatexText(q.text);
 const p=document.getElementById('q-inputs');
-qTextEl.innerHTML=renderKatexText(q.text);
-p.innerHTML='';
+p.innerHTML=''; // Explicitly clear previous answers
 if(q.type==='choice'){
     const ans=[{t:q.correct,c:true}];
     q.wrongs.forEach(w=>{if(w)ans.push({t:w,c:false});});
@@ -457,29 +463,13 @@ if(q.type==='choice'){
         const btn=document.createElement('button');
         btn.className='game-btn';
         btn.dataset.correct=a.c;
-        btn.onclick=function(){checkChoice(this,a.c);};
+        btn.onclick=()=>checkChoice(btn,a.c);
         btn.innerHTML=renderKatexText(a.t);
         btnsContainer.appendChild(btn);
     });
     p.appendChild(btnsContainer);
 }else{
-    const inpContainer=document.createElement('div');
-    inpContainer.className='inp-area';
-    const inpRow=document.createElement('div');
-    inpRow.className='inp-row';
-    const input=document.createElement('input');
-    input.type='text';
-    input.id='inp-ans';
-    input.placeholder='...';
-    input.autocomplete='off';
-    const btn=document.createElement('button');
-    btn.className='game-btn';
-    btn.textContent='OK';
-    btn.onclick=checkInput;
-    inpRow.appendChild(input);
-    inpRow.appendChild(btn);
-    inpContainer.appendChild(inpRow);
-    p.appendChild(inpContainer);
+    p.innerHTML=\`<div class="inp-area"><div class="inp-row"><input type="text" id="inp-ans" placeholder="..." autocomplete="off"><button class="game-btn" onclick="checkInput()">OK</button></div></div>\`;
 }}
 function showScore(targetId,text,color){const scorePopup=document.getElementById(targetId.replace('-wrap','-score-popup'));const targetEl=document.getElementById(targetId);const targetRect=targetEl.getBoundingClientRect();scorePopup.innerText=text;scorePopup.style.color=color;scorePopup.style.textShadow=\`0 0 10px \${color}\`;scorePopup.style.left=targetRect.left+targetRect.width/2+'px';scorePopup.style.top=targetRect.top-20+'px';scorePopup.classList.add('show');setTimeout(()=>{scorePopup.classList.remove('show');},1000);}
 function animateAttack(attackerId,targetId,color,scoreText){const projectile=document.getElementById('projectile');const attacker=document.getElementById(attackerId);const target=document.getElementById(targetId);const targetImg=document.getElementById(targetId.replace('-wrap','-img'));const battleGround=document.querySelector('.battle-ground');const startCharRect=attacker.getBoundingClientRect();const targetCharRect=target.getBoundingClientRect();const battleGroundRect=battleGround.getBoundingClientRect();const startX=(startCharRect.left+startCharRect.width/2)-battleGroundRect.left;const startY=(startCharRect.top+startCharRect.height/2)-battleGroundRect.top;const endX=(targetCharRect.left+targetCharRect.width/2)-battleGroundRect.left;const endY=(targetCharRect.top+targetCharRect.height/2)-battleGroundRect.top;projectile.style.background=color;projectile.style.boxShadow=\`0 0 15px \${color}, 0 0 25px \${color}\`;projectile.style.left=startX+'px';projectile.style.top=startY+'px';projectile.style.opacity='1';projectile.style.transform='scale(1)';setTimeout(()=>{projectile.style.left=endX+'px';projectile.style.top=endY+'px';},10);setTimeout(()=>{beep('hit');projectile.style.transform='scale(3)';projectile.style.opacity='0';targetImg.style.animation='fx-shake 0.4s';targetImg.style.filter=\`drop-shadow(0 0 25px \${color})\`;showScore(attackerId,scoreText,'var(--green)');setTimeout(()=>{targetImg.style.animation='';targetImg.style.filter='';},400);},550);}
