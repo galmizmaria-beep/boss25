@@ -1,4 +1,15 @@
 <div id="FX_ROOT">
+    <!-- Подключаем MathJax для редактора -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Montserrat:wght@400;700;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -60,7 +71,6 @@
         .q-dummy-btn { background: #333; color: #fff; padding: 8px 20px; border: 2px solid #555; border-radius: 5px; font-weight: 700; font-size: 12px; cursor: pointer; transition: 0.2s; }
         .q-dummy-btn.correct { background-color: var(--green); border-color: var(--green); color: #000; }
         .q-dummy-btn.wrong { background-color: var(--red); border-color: var(--red); }
-        .math-error-hint { color: var(--red); font-size: 10px; margin-top: 5px; text-align: center;} /* New CSS for math error hints */
         #quest-editor-panel, #location-list { display: none; }
         .list-item { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 11px; }
         .list-item button { font-size: 10px; padding: 4px 6px; margin-left: 4px; }
@@ -70,9 +80,6 @@
 
         @keyframes fx-idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes fx-float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-15px) rotate(2deg)}}@keyframes fx-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}@keyframes fx-shake{0%{transform:translate(1px, 1px)}20%{transform:translate(-3px, 0px)}40%{transform:translate(1px, -1px)}60%{transform:translate(-3px, 1px)}80%{transform:translate(-1px, -1px)}100%{transform:translate(1px, -2px)}}@keyframes fx-glitch{0%{transform:translate(0)}20%{transform:translate(-2px, 2px)}40%{transform:translate(-2px, -2px)}60%{transform:translate(2px, 2px)}80%{transform:translate(2px, -2px)}100%{transform:translate(0)}}@keyframes fx-spin{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}@keyframes fx-neon{0%,100%{opacity:1;filter:brightness(1)}50%{opacity:0.8;filter:brightness(1.5)}}@keyframes fx-wobble{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}@keyframes fx-swing{0%{transform:rotate(0deg)}20%{transform:rotate(15deg)}40%{transform:rotate(-10deg)}60%{transform:rotate(5deg)}80%{transform:rotate(-5deg)}100%{transform:rotate(0deg)}}@keyframes fx-bounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-30px)}60%{transform:translateY(-15px)}}@keyframes fx-flip{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}@keyframes fx-ghost{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.05)}}
     </style>
-    <!-- Include math.js for the editor's preview functionality -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.1/math.min.js"></script>
-
     <div class="view-editor">
         <div class="sidebar">
             <div class="sidebar-content">
@@ -137,7 +144,7 @@
                     </div>
                     <div class="control-group"><span class="control-label">Язык Игры</span><div class="sub-tabs" style="padding:0 0 10px 0;"><button class="sub-tab-link active" onclick="app.setGameLang('ru')">RU</button><button class="sub-tab-link" onclick="app.setGameLang('en')">EN</button></div><div id="lang_ru_fields"><label style="font-size:9px;color:#888;">Заголовок ( | = перенос):</label><input type="text" class="fx-input" id="i_title_ru" value="БИТВА|С БОССОМ"><label style="font-size:9px;color:#888;">Победа:</label><input type="text" class="fx-input" id="i_win_msg_ru" value="ТЫ ПОБЕДИЛ!"><label style="font-size:9px;color:#888;">Поражение:</label><input type="text" class="fx-input" id="i_lose_msg_ru" value="ТЫ ПРОИГРАЛ!"><label style="font-size:9px;color:#888;">Кнопка старт:</label><input type="text" class="fx-input" id="i_play_btn_ru" value="ИГРАТЬ"></div><div id="lang_en_fields" style="display:none;"><label style="font-size:9px;color:#888;">Title ( | = new line):</label><input type="text" class="fx-input" id="i_title_en" value="BOSS|BATTLE"><label style="font-size:9px;color:#888;">Win:</label><input type="text" class="fx-input" id="i_win_msg_en" value="YOU WIN!"><label style="font-size:9px;color:#888;">Lose:</label><input type="text" class="fx-input" id="i_lose_msg_en" value="YOU LOSE!"><label style="font-size:9px;color:#888;">Start Button:</label><input type="text" class="fx-input" id="i_play_btn_en" value="PLAY"></div></div>
                     <div id="quest-list-container"><div class="control-group"><span class="control-label">Список заданий</span><div id="quest-list" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;"></div><button class="fx-btn" style="width:100%" onclick="app.addQuest()">+ ДОБАВИТЬ ЗАДАНИЕ</button></div></div>
-                    <div id="quest-editor-panel"><div class="control-group"><span class="control-label" id="editor-title">РЕДАКТОР</span><div class="sub-tabs"><button class="sub-tab-link active" onclick="app.setQType('choice')" id="b_choice">ВЫБОР</button><button class="sub-tab-link" onclick="app.setQType('input')" id="b_input">ВВОД</button></div><span class="control-label">Текст вопроса</span><textarea class="fx-textarea" id="i_q_text" rows="2"></textarea><div id="area_choice"><span class="control-label" style="color:var(--green)">Верный ответ</span><input type="text" class="fx-input" id="i_c_ans"><span class="control-label" style="color:var(--primary)">Неверные ответы</span><input type="text" class="fx-input" id="i_w1"><input type="text" class="fx-input" id="i_w2"></div><div id="area_input" style="display:none"><span class="control-label" style="color:var(--green)">Правильный текст (или математическое выражение)</span><input type="text" class="fx-input" id="i_in_ans"><div class="param-row" style="margin-top:10px;"><span>Математическое выражение?</span><input type="checkbox" id="chk_is_math"></div></div><button class="fx-btn" style="width:100%;margin-top:10px;background:var(--green);color:#000;border-color:var(--green)" onclick="app.saveQuest()">СОХРАНИТЬ</button></div></div>
+                    <div id="quest-editor-panel"><div class="control-group"><span class="control-label" id="editor-title">РЕДАКТОР</span><div class="sub-tabs"><button class="sub-tab-link active" onclick="app.setQType('choice')" id="b_choice">ВЫБОР</button><button class="sub-tab-link" onclick="app.setQType('input')" id="b_input">ВВОД</button></div><span class="control-label">Текст вопроса</span><textarea class="fx-textarea" id="i_q_text" rows="2"></textarea><div id="area_choice"><span class="control-label" style="color:var(--green)">Верный ответ</span><input type="text" class="fx-input" id="i_c_ans"><span class="control-label" style="color:var(--primary)">Неверные ответы</span><input type="text" class="fx-input" id="i_w1"><input type="text" class="fx-input" id="i_w2"></div><div id="area_input" style="display:none"><span class="control-label" style="color:var(--green)">Правильный текст</span><input type="text" class="fx-input" id="i_in_ans"></div><button class="fx-btn" style="width:100%;margin-top:10px;background:var(--green);color:#000;border-color:var(--green)" onclick="app.saveQuest()">СОХРАНИТЬ</button></div></div>
                 </div>
             </div>
             <div class="gen-panel"><button class="btn-generate" onclick="app.generate()" id="b_gen">СКОПИРОВАТЬ КОД</button></div>
@@ -184,13 +191,7 @@
         },
         setMainTab(t){document.querySelectorAll('.main-tab-link').forEach(e=>e.classList.remove('active'));document.querySelector(`[onclick="app.setMainTab('${t}')"]`).classList.add('active');document.getElementById('sec_chars').classList.toggle('show',t==='chars');document.getElementById('sec_quests').classList.toggle('show',t==='quests');},
         setCharTab(t){document.querySelector('#sec_chars .sub-tab-link.active').classList.remove('active');document.querySelector(`[onclick="app.setCharTab('${t}')"]`).classList.add('active');document.getElementById('cfg_hero').style.display=t==='hero'?'block':'none';document.getElementById('cfg_boss').style.display=t==='boss'?'block':'none';},
-        setQType(t){
-            document.querySelector('#quest-editor-panel #b_choice').className=t==='choice'?'sub-tab-link active':'sub-tab-link';
-            document.querySelector('#quest-editor-panel #b_input').className=t==='input'?'sub-tab-link active':'sub-tab-link';
-            document.querySelector('#quest-editor-panel #area_choice').style.display=t==='choice'?'block':'none';
-            document.querySelector('#quest-editor-panel #area_input').style.display=t==='input'?'block':'none';
-            this.updatePreview(); // Update preview when tab changes, especially for input type
-        },
+        setQType(t){document.querySelector('#quest-editor-panel #b_choice').className=t==='choice'?'sub-tab-link active':'sub-tab-link';document.querySelector('#quest-editor-panel #b_input').className=t==='input'?'sub-tab-link active':'sub-tab-link';document.querySelector('#quest-editor-panel #area_choice').style.display=t==='choice'?'block':'none';document.querySelector('#quest-editor-panel #area_input').style.display=t==='input'?'block':'none';},
         setGameLang(l){this.gameLang=l;const btnContainer=document.querySelector('#sec_quests .sub-tabs');btnContainer.children[0].classList.toggle('active',l==='ru');btnContainer.children[1].classList.toggle('active',l==='en');document.getElementById('lang_ru_fields').style.display=l==='ru'?'block':'none';document.getElementById('lang_en_fields').style.display=l==='en'?'block':'none';},
         renderAnims(target){const grid=document.getElementById('ag_'+target);grid.innerHTML='';this.anims.forEach(a=>{const b=document.createElement('div');b.className='fx-btn'+(this.data[target].anim===a.id?' active':'');b.innerText=a.name;b.onclick=()=>{this.data[target].anim=a.id;this.renderAnims(target);this.updatePreview();};grid.appendChild(b);});},
 
@@ -333,113 +334,26 @@
             document.getElementById('c_b_glow').oninput=e=>{this.data.boss.gC=e.target.value;this.updatePreview();};
             document.getElementById('chk_timer').onchange=e=>{this.data.timerOn=e.target.checked;this.updatePreview();};
             document.getElementById('r_timer').oninput=e=>{this.data.timer=e.target.value;document.getElementById('val_timer').innerText=e.target.value;this.updatePreview();};
-            
-            // Add event listener for math checkbox in editor
-            document.getElementById('chk_is_math').onchange = () => this.updatePreview();
         },
-        renderQuestList(){const list=document.getElementById('quest-list');list.innerHTML='';this.quests.forEach((q,i)=>{const item=document.createElement('div');item.className='list-item';item.innerHTML=`<span>${i+1}. ${q.text||'Новый вопрос'}</span><div><button class="fx-btn" onclick="app.editQuest(${i})">✏️</button><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteQuest(${i})">🗑️</button></div>`;list.appendChild(item);});this.updatePreview();},
-        addQuest(isFirst=false){const newQ={type:'choice',text:'Сколько будет 2 + 2?',correct:'4',wrongs:['5','22'],correctInp:'4', isMath: false};this.quests.push(newQ);if(!isFirst)this.renderQuestList();this.editQuest(this.quests.length-1);},
-        editQuest(index){
-            this.currentQuestIndex=index;
-            const q=this.quests[index];
-            document.getElementById('editor-title').innerText=`ЗАДАНИЕ #${index+1}`;
-            this.setQType(q.type);
-            document.getElementById('i_q_text').value=q.text;
-            document.getElementById('i_c_ans').value=q.correct;
-            document.getElementById('i_w1').value=q.wrongs[0];
-            document.getElementById('i_w2').value=q.wrongs[1];
-            document.getElementById('i_in_ans').value=q.correctInp;
-            document.getElementById('chk_is_math').checked = q.isMath || false; // Load math checkbox state
-            document.getElementById('quest-list-container').style.display='none';
-            document.getElementById('quest-editor-panel').style.display='block';
+        renderQuestList(){
+            const list=document.getElementById('quest-list');
+            list.innerHTML='';
+            this.quests.forEach((q,i)=>{
+                const item=document.createElement('div');
+                item.className='list-item';
+                item.innerHTML=`<span>${i+1}. ${q.text||'Новый вопрос'}</span><div><button class="fx-btn" onclick="app.editQuest(${i})">✏️</button><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteQuest(${i})">🗑️</button></div>`;
+                list.appendChild(item);
+            });
+            // Обновляем формулы в списке
+            setTimeout(() => { if(window.MathJax) MathJax.typesetPromise([list]); }, 50);
+            this.updatePreview();
         },
-        saveQuest(){
-            if(this.currentQuestIndex===-1)return;
-            const q=this.quests[this.currentQuestIndex];
-            q.type=document.querySelector('#quest-editor-panel .sub-tab-link.active').id==='b_choice'?'choice':'input';
-            q.text=document.getElementById('i_q_text').value;
-            if(q.type==='choice'){
-                q.correct=document.getElementById('i_c_ans').value;
-                q.wrongs=[document.getElementById('i_w1').value,document.getElementById('i_w2').value];
-                q.isMath = false; // Math only applies to input questions
-            }else{
-                q.correctInp=document.getElementById('i_in_ans').value;
-                q.isMath = document.getElementById('chk_is_math').checked; // Save math checkbox state
-            }
-            this.previewQuestIndex=this.currentQuestIndex;
-            document.getElementById('quest-list-container').style.display='block';
-            document.getElementById('quest-editor-panel').style.display='none';
-            this.renderQuestList();
-        },
+        addQuest(isFirst=false){const newQ={type:'choice',text:'Сколько будет $2 + 2$?',correct:'$4$',wrongs:['$5$','$22$'],correctInp:'4'};this.quests.push(newQ);if(!isFirst)this.renderQuestList();this.editQuest(this.quests.length-1);},
+        editQuest(index){this.currentQuestIndex=index;const q=this.quests[index];document.getElementById('editor-title').innerText=`ЗАДАНИЕ #${index+1}`;this.setQType(q.type);document.getElementById('i_q_text').value=q.text;document.getElementById('i_c_ans').value=q.correct;document.getElementById('i_w1').value=q.wrongs[0];document.getElementById('i_w2').value=q.wrongs[1];document.getElementById('i_in_ans').value=q.correctInp;document.getElementById('quest-list-container').style.display='none';document.getElementById('quest-editor-panel').style.display='block';},
+        saveQuest(){if(this.currentQuestIndex===-1)return;const q=this.quests[this.currentQuestIndex];q.type=document.querySelector('#quest-editor-panel .sub-tab-link.active').id==='b_choice'?'choice':'input';q.text=document.getElementById('i_q_text').value;if(q.type==='choice'){q.correct=document.getElementById('i_c_ans').value;q.wrongs=[document.getElementById('i_w1').value,document.getElementById('i_w2').value];}else{q.correctInp=document.getElementById('i_in_ans').value;}this.previewQuestIndex=this.currentQuestIndex;document.getElementById('quest-list-container').style.display='block';document.getElementById('quest-editor-panel').style.display='none';this.renderQuestList();},
         deleteQuest(index){if(confirm(`Удалить задание #${index+1}?`)){this.quests.splice(index,1);this.previewQuestIndex=0;this.renderQuestList();}},
         prevPreviewQuest(){if(this.previewQuestIndex>0){this.previewQuestIndex--;this.updatePreview();}},
         nextPreviewQuest(){if(this.previewQuestIndex<this.quests.length-1){this.previewQuestIndex++;this.updatePreview();}},
-
-        // Helper function for math evaluation in editor preview
-        evaluateMathExpression(expression) {
-            if (typeof math === 'undefined') {
-                return { value: NaN, error: 'Math.js library not loaded for preview.' };
-            }
-            try {
-                const result = math.evaluate(expression);
-                // math.js can return various types, ensure it's a number for comparison
-                if (typeof result === 'number') {
-                    return { value: result, error: null };
-                } else if (result && typeof result.valueOf === 'function' && typeof result.valueOf() === 'number') {
-                     // For math.js BigNumber or Fraction types, convert to primitive number
-                    return { value: result.valueOf(), error: null };
-                }
-                return { value: NaN, error: 'Result is not a number or not directly evaluable to a number.' };
-            } catch (e) {
-                return { value: NaN, error: e.message };
-            }
-        },
-
-        previewInputAnswer(){
-            const input=document.getElementById('preview_input_ans');
-            const q=this.quests[this.previewQuestIndex];
-            if(!input||!q)return;
-            
-            // Clear previous states
-            input.classList.remove('correct', 'wrong');
-            const oldHint = input.closest('.q-preview-btns').querySelector('.math-error-hint');
-            if (oldHint) oldHint.remove();
-
-            let isCorrect = false;
-            let errorMsg = '';
-
-            if (q.isMath) {
-                const userAnswer = this.evaluateMathExpression(input.value.trim());
-                const correctAnswer = this.evaluateMathExpression(q.correctInp.trim());
-
-                const EPSILON = 1e-9; // Tolerance for floating point comparisons
-
-                if (userAnswer.error || correctAnswer.error || isNaN(userAnswer.value) || isNaN(correctAnswer.value)) {
-                    isCorrect = false;
-                    errorMsg = userAnswer.error || correctAnswer.error || 'Неверный формат или некорректное выражение.';
-                } else {
-                    isCorrect = Math.abs(userAnswer.value - correctAnswer.value) < EPSILON;
-                }
-            } else {
-                isCorrect = input.value.trim().toLowerCase() === q.correctInp.trim().toLowerCase();
-            }
-
-            if (errorMsg) {
-                input.classList.add('wrong'); // Indicate error visually
-                const hint = document.createElement('div');
-                hint.className = 'math-error-hint'; // New class for error hints
-                hint.innerText = errorMsg;
-                input.closest('.q-preview-btns').appendChild(hint);
-                // Remove the error message after a short delay
-                setTimeout(() => {
-                    input.classList.remove('wrong');
-                    if (hint.parentNode) hint.remove();
-                }, 2000);
-            } else {
-                input.classList.add(isCorrect?'correct':'wrong');
-                setTimeout(()=>input.classList.remove('correct','wrong'),800);
-            }
-        },
         updatePreview(){
             const h=this.data.hero;
             const b=this.data.boss;
@@ -457,9 +371,9 @@
             const prevBtn=document.getElementById('prev_q_btn');
             prevBtn.disabled=this.previewQuestIndex===0;
             const nextBtn=document.getElementById('next_q_btn');
-            nextBtn.disabled=this.previewQuestIndex >= (this.quests.length > 0 ? this.quests.length - 1 : 0); // Fix for next button on empty quests
+            nextBtn.disabled=this.previewQuestIndex>=this.quests.length-1||this.quests.length===0;
 
-            if(this.quests.length > 0 && currentQ.type){ 
+            if(this.quests.length>0){
                 if(currentQ.type==='choice'){
                     let answers=[{t:currentQ.correct,c:true}];
                     if(currentQ.wrongs[0])answers.push({t:currentQ.wrongs[0],c:false});
@@ -467,16 +381,18 @@
                     answers.sort(()=>Math.random()-0.5);
                     let btnsHTML=answers.map(a=>`<div class="q-dummy-btn" onclick="app.previewAnswer(this,${a.c})">${a.t}</div>`).join('');
                     btnsDiv.innerHTML=btnsHTML;
-                }else{ // Type is 'input'
+                }else{
                     btnsDiv.innerHTML=`<input id="preview_input_ans" type="text" class="fx-input" style="width:150px; text-align:center;" placeholder="Ваш ответ..."><div class="q-dummy-btn" onclick="app.previewInputAnswer()">OK</div>`;
                 }
-            } else if (this.quests.length === 0) {
-                // If no quests, display placeholder or disable buttons
-                document.getElementById('prev_q_text').innerText = 'Нет доступных заданий. Добавьте новое задание.';
-                prevBtn.disabled = true;
-                nextBtn.disabled = true;
             }
             
+            // Рендер MathJax для предпросмотра
+            setTimeout(() => {
+                if (window.MathJax) {
+                    MathJax.typesetPromise([document.getElementById('prev_q_text'), document.getElementById('prev_q_btns')]);
+                }
+            }, 50);
+
             const apply=(elId,d)=>{
                 const img=document.getElementById(elId);
                 const charBox = img.parentNode;
@@ -497,6 +413,7 @@
             apply('img_boss',b);
         },
         previewAnswer(btn,isCorrect){btn.classList.add(isCorrect?'correct':'wrong');setTimeout(()=>btn.classList.remove('correct','wrong'),500);},
+        previewInputAnswer(){const input=document.getElementById('preview_input_ans');const q=this.quests[this.previewQuestIndex];if(!input||!q)return;const isCorrect=input.value.trim().toLowerCase()===q.correctInp.trim().toLowerCase();input.classList.add(isCorrect?'correct':'wrong');setTimeout(()=>input.classList.remove('correct','wrong'),800);},
         generate(){
             const d=this.data;
             const langData={
@@ -511,8 +428,7 @@
 
             const generatedOverlay = d.titleScreenOn ? `<div class="overlay" id="start-overlay"><div class="big-title">${langData[this.gameLang].title.replace(/\|/g, '<br>')}</div><button class="play-btn" onclick="startGame()"> ${langData[this.gameLang].play}</button></div>` : '';
 
-            // This script block will be injected into the generated iframe
-            const script=`<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.1/math.min.js"></script><script>
+            const script=`<script>
 let timerVal=${d.timer*60},timerOn=${d.timerOn},audioCtx=null,currentQIndex=-1,locIndex=0,isAnswered=false,battleState=50,isGameOver=false,gameStarted=false;
 const quests=${JSON.stringify(this.quests)},locations=${JSON.stringify(this.locations.map(l=>l.data))},langPack=${JSON.stringify(langData[this.gameLang])};
 const step=50/((quests.length||1));
@@ -529,75 +445,13 @@ function updatePositionsAndProgress(){const heroWrap=document.getElementById('he
 function loadNextQuestion(){isAnswered=false;currentQIndex++;const isGameEnd=currentQIndex>=quests.length;if(isGameEnd){endGame(battleState>50);return;}
 if(locations.length>0&&currentQIndex>0){locIndex=(locIndex+1)%locations.length;document.body.style.backgroundImage=\`url(\${locations[locIndex]})\`;}
 const q=quests[currentQIndex];document.getElementById('q-text').innerText=q.text;const p=document.getElementById('q-inputs');let html='';if(q.type==='choice'){const ans=[{t:q.correct,c:true}];q.wrongs.forEach(w=>{if(w)ans.push({t:w,c:false});});ans.sort(()=>Math.random()-0.5);html=\`<div class="btns">\${ans.map(a=>\`<button data-correct="\${a.c}" class="game-btn" onclick="checkChoice(this,\${a.c})">\${a.t}</button>\`).join('')}</div>\`;}else{html=\`<div class="inp-area"><div class="inp-row"><input type="text" id="inp-ans" placeholder="..." autocomplete="off"><button class="game-btn" onclick="checkInput()">OK</button></div></div>\`;}
-p.innerHTML=html;}
-
-function evaluateMathExpression(expression) {
-    if (typeof math === 'undefined') { // Added check
-        return { value: NaN, error: 'Ошибка: библиотека math.js не загружена.' };
-    }
-    try {
-        const result = math.evaluate(expression);
-        if (typeof result === 'number') {
-            return { value: result, error: null };
-        } else if (result && typeof result.valueOf === 'function' && typeof result.valueOf() === 'number') {
-             return { value: result.valueOf(), error: null };
-        }
-        return { value: NaN, error: 'Результат не является числом.' };
-    } catch (e) {
-        return { value: NaN, error: e.message };
-    }
+p.innerHTML=html; 
+if(window.MathJax) { MathJax.typesetPromise([document.getElementById('q-panel')]); } 
 }
-
 function showScore(targetId,text,color){const scorePopup=document.getElementById(targetId.replace('-wrap','-score-popup'));const targetEl=document.getElementById(targetId);const targetRect=targetEl.getBoundingClientRect();scorePopup.innerText=text;scorePopup.style.color=color;scorePopup.style.textShadow=\`0 0 10px \${color}\`;scorePopup.style.left=targetRect.left+targetRect.width/2+'px';scorePopup.style.top=targetRect.top-20+'px';scorePopup.classList.add('show');setTimeout(()=>{scorePopup.classList.remove('show');},1000);}
 function animateAttack(attackerId,targetId,color,scoreText){const projectile=document.getElementById('projectile');const attacker=document.getElementById(attackerId);const target=document.getElementById(targetId);const targetImg=document.getElementById(targetId.replace('-wrap','-img'));const battleGround=document.querySelector('.battle-ground');const startCharRect=attacker.getBoundingClientRect();const targetCharRect=target.getBoundingClientRect();const battleGroundRect=battleGround.getBoundingClientRect();const startX=(startCharRect.left+startCharRect.width/2)-battleGroundRect.left;const startY=(startCharRect.top+startCharRect.height/2)-battleGroundRect.top;const endX=(targetCharRect.left+targetCharRect.width/2)-battleGroundRect.left;const endY=(targetCharRect.top+targetCharRect.height/2)-battleGroundRect.top;projectile.style.background=color;projectile.style.boxShadow=\`0 0 15px \${color}, 0 0 25px \${color}\`;projectile.style.left=startX+'px';projectile.style.top=startY+'px';projectile.style.opacity='1';projectile.style.transform='scale(1)';setTimeout(()=>{projectile.style.left=endX+'px';projectile.style.top=endY+'px';},10);setTimeout(()=>{beep('hit');projectile.style.transform='scale(3)';projectile.style.opacity='0';targetImg.style.animation='fx-shake 0.4s';targetImg.style.filter=\`drop-shadow(0 0 25px \${color})\`;showScore(attackerId,scoreText,'var(--green)');setTimeout(()=>{targetImg.style.animation='';targetImg.style.filter='';},400);},550);}
 function checkChoice(b,isCor){if(!gameStarted)activateGame();if(isAnswered)return;isAnswered=true;document.querySelectorAll('.btns .game-btn').forEach(btn=>btn.disabled=true);if(isCor){handleCorrect(b);}else{handleWrong(b);const correctBtn=document.querySelector('.game-btn[data-correct=\\"true\\"]');if(correctBtn)correctBtn.style.background='var(--green)';}}
-function checkInput(){
-    if(!gameStarted)activateGame();
-    if(isAnswered)return;
-    isAnswered=true;
-    const i=document.getElementById('inp-ans');
-    i.disabled=true;
-    document.querySelector('.inp-area .game-btn').disabled=true;
-    const currentQ = quests[currentQIndex];
-    let isCorrect = false;
-
-    // Remove any previous hint
-    const oldHint = i.closest('.inp-area').querySelector('.correct-answer-hint');
-    if (oldHint) oldHint.remove();
-
-    if (currentQ.isMath) { // Math question logic
-        const userAnswer = evaluateMathExpression(i.value.trim());
-        const correctAnswer = evaluateMathExpression(currentQ.correctInp.trim());
-
-        const EPSILON = 1e-9; // Tolerance for floating point comparisons
-
-        if (userAnswer.error || correctAnswer.error || isNaN(userAnswer.value) || isNaN(correctAnswer.value)) {
-            isCorrect = false;
-            const hint = document.createElement('div');
-            hint.className = 'correct-answer-hint';
-            hint.style.color = 'var(--red)';
-            hint.innerText = userAnswer.error || correctAnswer.error || 'Неверный формат или некорректное выражение!';
-            i.closest('.inp-area').appendChild(hint);
-        } else {
-            isCorrect = Math.abs(userAnswer.value - correctAnswer.value) < EPSILON;
-        }
-    } else { // Regular text input logic
-        isCorrect = i.value.trim().toLowerCase() === (currentQ.correctInp || '').trim().toLowerCase();
-    }
-
-    if(isCorrect){
-        handleCorrect(i);
-    }else{
-        handleWrong(i);
-        // Only show hint if not already shown an error message for math expression parsing
-        if (!currentQ.isMath || (currentQ.isMath && !i.closest('.inp-area').querySelector('.correct-answer-hint[style*="var(--red)"]'))) {
-            const hint = document.createElement('div');
-            hint.className = 'correct-answer-hint';
-            hint.innerText='Верный ответ: ' + currentQ.correctInp;
-            i.closest('.inp-area').appendChild(hint);
-        }
-    }
-}
+function checkInput(){if(!gameStarted)activateGame();if(isAnswered)return;isAnswered=true;const i=document.getElementById('inp-ans');i.disabled=true;document.querySelector('.inp-area .game-btn').disabled=true;if(i.value.trim().toLowerCase()===(quests[currentQIndex].correctInp||'').trim().toLowerCase()){handleCorrect(i);}else{handleWrong(i);const hint=document.createElement('div');hint.className='correct-answer-hint';hint.innerText='Верный ответ: '+quests[currentQIndex].correctInp;i.closest('.inp-area').appendChild(hint);}}
 function handleCorrect(el){document.body.style.pointerEvents='none';animateAttack('hero-wrap','boss-wrap','var(--green)','+100');if(el.tagName==='BUTTON'){el.style.background='var(--green)';el.style.color='#000';}else{el.style.borderColor='var(--green)';}setTimeout(()=>{battleState=Math.min(100,battleState+step);updatePositionsAndProgress();document.body.style.pointerEvents='';if(battleState<100)loadNextQuestion();},1000);}
 function handleWrong(el){document.body.style.pointerEvents='none';animateAttack('boss-wrap','hero-wrap','var(--red)','+100');if(el.tagName==='BUTTON'){el.style.background='var(--red)';}else{el.style.borderColor='var(--red)';}setTimeout(()=>{battleState=Math.max(0,battleState-step);updatePositionsAndProgress();document.body.style.pointerEvents='';if(battleState>0)loadNextQuestion();},1000);}
 function endGame(didWin){if(isGameOver)return;isGameOver=true;document.body.style.pointerEvents='none';if(document.getElementById('timer-wrap'))document.getElementById('timer-wrap').style.display='none';const p=document.getElementById('q-panel');p.innerHTML="";let msg,color,winnerImg,winnerId;if(didWin===true){msg=langPack.win;color='var(--green)';document.getElementById('boss-img').style.opacity='0';winnerImg=document.getElementById('hero-img');winnerId='hero-wrap';}else{msg=langPack.lose;color='var(--red)';document.getElementById('hero-img').style.opacity='0';winnerImg=document.getElementById('boss-img');winnerId='boss-wrap';}
@@ -606,7 +460,10 @@ p.innerHTML=\`<h2 style='font-size:40px;color:\${color};text-shadow:0 0 20px \${
 function initGame(){if(${d.titleScreenOn}){}else{document.getElementById('game-root').style.opacity='1';loadNextQuestion();}}
 document.addEventListener('DOMContentLoaded',initGame);
 <\/script>`;
-            const html=`<!DOCTYPE html><html><head><style>
+            const html=`<!DOCTYPE html><html><head>
+<script>window.MathJax={tex:{inlineMath:[['$','$']]}};\<\/script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">\<\/script>
+<style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@700&family=Montserrat:wght@900&display=swap');
 :root{ --primary: #8A2BE2; --red: #ff3b30; --green: #00FF88; --magenta: #e521e5;}
 body{margin:0;overflow:hidden;font-family:'Rajdhani',sans-serif;user-select:none;width:100%;height:100vh;background-color:#12101E;background-size:cover;background-position:center;transition:background-image 0.5s ease-in-out; background-image:${this.locations.length>0?`url(${this.locations[0].data})`:'none'}; display: flex; align-items: center; justify-content: center;}
