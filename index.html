@@ -191,6 +191,7 @@
             return new Promise(async (resolve) => {
                 const img = new Image();
                 let detectedMimeType = 'image/jpeg';
+                img.crossOrigin = "Anonymous"; // Attempt to handle CORS issues for URLs
 
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
@@ -210,7 +211,7 @@
                     ctx.drawImage(img, 0, 0, width, height);
                     
                     let compressedDataUrl;
-                    if (detectedMimeType === 'image/png' || detectedMimeType === 'image/webp') {
+                    if (detectedMimeType.includes('png') || detectedMimeType.includes('webp')) {
                         compressedDataUrl = canvas.toDataURL('image/png');
                     } else {
                         compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
@@ -237,24 +238,8 @@
                         }
                         img.src = source;
                     } else {
-                        try {
-                            const response = await fetch(source, { mode: 'cors' });
-                            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                            const blob = await response.blob();
-                            detectedMimeType = blob.type;
-                            const reader = new FileReader();
-                            reader.onload = (e) => {
-                                img.src = e.target.result;
-                            };
-                            reader.onerror = (e) => {
-                                console.error('Error reading blob as DataURL:', e);
-                                resolve('');
-                            };
-                            reader.readAsDataURL(blob);
-                        } catch (error) {
-                            console.warn(`Could not fetch image from URL directly (might be CORS issue), falling back to direct src set. Transparency might not be preserved if original was PNG and was not a data URL: ${source}`, error);
-                            img.src = source; 
-                        }
+                         // Simple proxy trick for CORS issues, may not always work
+                        img.src = 'https://cors-anywhere.herokuapp.com/' + source;
                     }
                 } else {
                     console.error('Invalid source type for loadImageAndCompress');
@@ -333,7 +318,6 @@
             this.quests.forEach((q,i)=>{
                 const item=document.createElement('div');
                 item.className='list-item';
-                // ИСПРАВЛЕНИЕ #1: Теперь текст в списке заданий тоже рендерится через KaTeX
                 const questTextSpan = document.createElement('span');
                 questTextSpan.innerHTML = `${i+1}. ${this.renderLatex(q.text || 'Новый вопрос')}`;
                 
@@ -381,9 +365,8 @@
             const qTextElement = document.getElementById('prev_q_text');
             if (this.quests.length > 0) {
                 const prefix = `(${this.previewQuestIndex + 1}/${this.quests.length}) `;
-                // ИСПРАВЛЕНИЕ #2: Более надежный способ обновления текста, который предотвращает дублирование
-                qTextElement.textContent = prefix; // Сначала вставляем текст
-                qTextElement.insertAdjacentHTML('beforeend', this.renderLatex(currentQ.text || '')); // Затем добавляем отрендеренный HTML
+                // ИСПРАВЛЕНИЕ #1: Замена двухступенчатого обновления на однократное через innerHTML
+                qTextElement.innerHTML = prefix + this.renderLatex(currentQ.text || '');
             } else {
                 qTextElement.innerText = "Настройте задания...";
             }
@@ -475,9 +458,11 @@ function updatePositionsAndProgress(){const heroWrap=document.getElementById('he
 function loadNextQuestion(){isAnswered=false;currentQIndex++;const isGameEnd=currentQIndex>=quests.length;if(isGameEnd){endGame(battleState>50);return;}
 if(locations.length>0&&currentQIndex>0){locIndex=(locIndex+1)%locations.length;document.body.style.backgroundImage=\`url(\${locations[locIndex]})\`;}
 const q=quests[currentQIndex];
-const qTextEl=document.getElementById('q-text');qTextEl.textContent='('+(currentQIndex+1)+'/'+quests.length+') ';qTextEl.insertAdjacentHTML('beforeend',renderKatexText(q.text));
+const qTextEl=document.getElementById('q-text');
+// ИСПРАВЛЕНИЕ #2: Замена двухступенчатого обновления на однократное через innerHTML для сгенерированной игры
+qTextEl.innerHTML = '('+(currentQIndex+1)+'/'+quests.length+') ' + renderKatexText(q.text);
 const p=document.getElementById('q-inputs');
-p.innerHTML=''; // Explicitly clear previous answers
+p.innerHTML='';
 if(q.type==='choice'){
     const ans=[{t:q.correct,c:true}];
     q.wrongs.forEach(w=>{if(w)ans.push({t:w,c:false});});
