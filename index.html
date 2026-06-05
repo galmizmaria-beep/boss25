@@ -42,7 +42,7 @@
         .preview-hud { padding: 15px 20px; z-index: 5; display: flex; justify-content: space-between; width: 100%; align-items: center; gap: 15px; position: relative; }
         .hud-player { display: flex; align-items: center; gap: 10px; min-width: 0; }
         .hud-player.right { flex-direction: row-reverse; }
-        .hp-bar-preview { flex-shrink: 1; width: 100%; min-width: 80px; max-width: 200px; height: 8px; background: rgba(0,0,0,0.5); border-radius: 4px; border: 1px solid #444; overflow: hidden; }
+        .hp-bar-preview { flex-shrink: 1; width: 100%; min-width: 80px; max-width: 200px; height: 8px; background: rgba(0,0,0,0.5); border: 1px solid #444; overflow: hidden; }
         .hp-fill-preview { height: 100%; transition: 0.3s; }
         .hud-char-name { font-size: 16px; font-weight: 900; color: #fff; text-shadow: 1px 1px 0 #000; white-space: nowrap; }
         .timer-preview { flex-shrink: 0; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 28px; background: rgba(0,0,0,0.5); color: #ffd700; padding: 2px 12px; border-radius: 6px; letter-spacing: 2px; border: 1px solid rgba(255,255,255,0.2); }
@@ -52,8 +52,8 @@
             width: 40%; height: auto; display: flex; align-items: flex-end; justify-content: center; 
             position: absolute; transition: bottom 0.3s ease-out;
         }
-        .char-box:first-child { left: 10%; } /* Hero */
-        .char-box:last-child { right: 10%; } /* Boss */
+        .char-box:first-child { left: 10%; }
+        .char-box:last-child { right: 10%; }
         
         .char-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: 0.3s; }
         .quest-dock { position: absolute; bottom: 0; left: 0; right: 0; background: var(--bg-panel); border-top: 3px solid var(--cyan); padding: 15px; z-index: 10; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
@@ -164,270 +164,129 @@
     <textarea id="hidden_code" style="position:absolute;left:-9999px;top:0;opacity:0;"></textarea>
 
     <script>
-        <script>
-    const app={previewQuestIndex:0,currentQuestIndex:-1,quests:[],locations:[],musicFile:null,gameLang:'ru',
-    data:{
-        hero:{src:'',anim:'idle',size:100,gC:'#00e5ff',gP:0,speed:3, landingOffset: 15},
-        boss:{src:'',anim:'idle',size:100,gC:'#ff0055',gP:0,speed:3, landingOffset: 15},
-        timer:5,
-        timerOn:true,
-        titleScreenOn:true
-    },
-    anims:[{id:'idle',name:'Покой'},{id:'float',name:'Парение'},{id:'pulse',name:'Пульс'},{id:'shake',name:'Тряска'},{id:'glitch',name:'Глюк'},{id:'spin',name:'Вращение'},{id:'neon',name:'Неон'},{id:'wobble',name:'Шатание'},{id:'swing',name:'Качание'},{id:'bounce',name:'Прыжок'},{id:'flip',name:'Переворот'},{id:'ghost',name:'Призрак'}],
-    
-    init(){
-        this.renderAnims('hero');
-        this.renderAnims('boss');
-        this.bindEvents();
-        this.addQuest(true);
-        this.updatePreview();
-    },
-    setMainTab(t){document.querySelectorAll('.main-tab-link').forEach(e=>e.classList.remove('active'));document.querySelector(`[onclick="app.setMainTab('${t}')"]`).classList.add('active');document.getElementById('sec_chars').classList.toggle('show',t==='chars');document.getElementById('sec_quests').classList.toggle('show',t==='quests');},
-    setCharTab(t){document.querySelector('#sec_chars .sub-tab-link.active').classList.remove('active');document.querySelector(`[onclick="app.setCharTab('${t}')"]`).classList.add('active');document.getElementById('cfg_hero').style.display=t==='hero'?'block':'none';document.getElementById('cfg_boss').style.display=t==='boss'?'block':'none';},
-    setQType(t){document.querySelector('#quest-editor-panel .sub-tab-link.active').className=t==='choice'?'sub-tab-link active':'sub-tab-link';document.querySelector('#quest-editor-panel #b_input').className=t==='input'?'sub-tab-link active':'sub-tab-link';document.querySelector('#quest-editor-panel #area_choice').style.display=t==='choice'?'block':'none';document.querySelector('#quest-editor-panel #area_input').style.display=t==='input'?'block':'none';},
-    setGameLang(l){this.gameLang=l;const btnContainer=document.querySelector('#sec_quests .sub-tabs');btnContainer.children[0].classList.toggle('active',l==='ru');btnContainer.children[1].classList.toggle('active',l==='en');document.getElementById('lang_ru_fields').style.display=l==='ru'?'block':'none';document.getElementById('lang_en_fields').style.display=l==='en'?'block':'none';},
-    renderAnims(target){const grid=document.getElementById('ag_'+target);grid.innerHTML='';this.anims.forEach(a=>{const b=document.createElement('div');b.className='fx-btn'+(this.data[target].anim===a.id?' active':'');b.innerText=a.name;b.onclick=()=>{this.data[target].anim=a.id;this.renderAnims(target);this.updatePreview();};grid.appendChild(b);});},
+        const app = {
+            previewQuestIndex: 0,
+            currentQuestIndex: -1,
+            quests: [],
+            locations: [],
+            musicFile: null,
+            gameLang: 'ru',
+            data: {
+                hero: { src: '', anim: 'idle', size: 100, gC: '#00e5ff', gP: 0, speed: 3, landingOffset: 15 },
+                boss: { src: '', anim: 'idle', size: 100, gC: '#ff0055', gP: 0, speed: 3, landingOffset: 15 },
+                timer: 5,
+                timerOn: true,
+                titleScreenOn: true
+            },
+            anims: [{ id: 'idle', name: 'Покой' }, { id: 'float', name: 'Парение' }, { id: 'pulse', name: 'Пульс' }, { id: 'shake', name: 'Тряска' }, { id: 'glitch', name: 'Глюк' }, { id: 'spin', name: 'Вращение' }, { id: 'neon', name: 'Неон' }, { id: 'wobble', name: 'Шатание' }, { id: 'swing', name: 'Качание' }, { id: 'bounce', name: 'Прыжок' }, { id: 'flip', name: 'Переворот' }, { id: 'ghost', name: 'Призрак' }],
 
-    async loadImageAndCompress(source, quality = 0.7, maxWidth = 1024, maxHeight = 1024) {
-        return new Promise(async (resolve) => {
-            const img = new Image();
-            let detectedMimeType = 'image/jpeg';
-            img.crossOrigin = "Anonymous";
+            init() {
+                this.renderAnims('hero');
+                this.renderAnims('boss');
+                this.bindEvents();
+                this.addQuest(true);
+                this.updatePreview();
+            },
 
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
+            renderLatex(text) {
+                if (typeof katex === 'undefined' || !text) return text;
+                if (text.includes('katex-mathml')) return text; // Защита от повторного рендера
 
-                let width = img.width;
-                let height = img.height;
-
-                if (width > maxWidth || height > maxHeight) {
-                    const ratio = Math.min(maxWidth / width, maxHeight / height);
-                    width *= ratio;
-                    height *= ratio;
-                }
-                
-                canvas.width = width;
-                canvas.height = height;
-                ctx.drawImage(img, 0, 0, width, height);
-                
-                let compressedDataUrl;
-                if (detectedMimeType.includes('png') || detectedMimeType.includes('webp')) {
-                    compressedDataUrl = canvas.toDataURL('image/png');
-                } else {
-                    compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-                }
-                resolve(compressedDataUrl);
-            };
-            img.onerror = (e) => {
-                console.error('Error loading image:', e);
-                resolve(''); 
-            };
-
-            if (source instanceof File) {
-                detectedMimeType = source.type;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(source);
-            } else if (typeof source === 'string') {
-                if (source.startsWith('data:')) {
-                    const mimeMatch = source.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,/);
-                    if (mimeMatch && mimeMatch[1]) {
-                        detectedMimeType = mimeMatch[1];
+                return text.replace(/\$\$([\s\S]*?)\$\$|\$([^\$]*?)\$/g, (match, display, inline) => {
+                    try {
+                        const expr = (display || inline || '').trim();
+                        return katex.renderToString(expr, {
+                            displayMode: !!display,
+                            throwOnError: false
+                        });
+                    } catch (e) {
+                        return match;
                     }
-                    img.src = source;
+                });
+            },
+
+            updatePreview() {
+                const h = this.data.hero;
+                const b = this.data.boss;
+
+                document.getElementById('stage_bg').style.backgroundImage = this.locations.length > 0 ? `url(${this.locations[0].data})` : 'none';
+                document.getElementById('p_h_name').innerText = document.getElementById('i_h_name').value;
+                document.getElementById('p_b_name').innerText = document.getElementById('i_b_name').value;
+                document.getElementById('p_timer').style.display = this.data.timerOn ? 'block' : 'none';
+                document.getElementById('p_timer').innerText = this.data.timerOn ? (this.data.timer < 10 ? '0' + this.data.timer : this.data.timer) + ':00' : '';
+
+                const currentQ = this.quests[this.previewQuestIndex] || { text: 'Настройте задания...' };
+
+                const qTextElement = document.getElementById('prev_q_text');
+
+                if (this.quests.length > 0) {
+                    // Задержка для корректного рендера KaTeX
+                    setTimeout(() => {
+                        qTextElement.innerHTML = this.renderLatex(currentQ.text || '');
+                    }, 50);
                 } else {
-                    img.src = 'https://cors-anywhere.herokuapp.com/' + source;
+                    qTextElement.innerText = "Настройте задания...";
                 }
-            } else {
-                console.error('Invalid source type for loadImageAndCompress');
-                resolve('');
-            }
-        });
-    },
 
-    async handleImage(file,target){
-        if(file){
-            const compressedData = await this.loadImageAndCompress(file, 0.7, 512, 512);
-            this.data[target].src=compressedData;
-            this.updatePreview();
-        }
-    },
-    async handleImageURL(url, target){
-        if(url){
-            const compressedData = await this.loadImageAndCompress(url, 0.7, 512, 512);
-            this.data[target].src = compressedData;
-            this.updatePreview();
-        }
-    },
-    async handleLocations(files){
-        for(let file of files){
-            const compressedData = await this.loadImageAndCompress(file, 0.75, 1280, 1280);
-            this.locations.push({name:file.name,data:compressedData});
-        }
-        this.renderLocationList();
-    },
-    async addLocationURL(url){
-        if(url){
-            const compressedData = await this.loadImageAndCompress(url, 0.75, 1280, 1280);
-            const name = url.substring(url.lastIndexOf('/') + 1) || 'URL Image';
-            this.locations.push({name: name, data: compressedData});
-            this.renderLocationList();
-            document.getElementById('i_loc_url').value = '';
-        }
-    },
-    renderLocationList(){const c=document.getElementById('location-list');c.innerHTML='';this.locations.forEach((loc,i)=>{const item=document.createElement('div');item.className='list-item';item.innerHTML=`<span>${i+1}. ${loc.name}</span><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteLocation(${i})">X</button>`;c.appendChild(item);});c.style.display=this.locations.length>0?'flex':'none';this.updatePreview();},
-    deleteLocation(i){this.locations.splice(i,1);this.renderLocationList();},
-    handleMusic(file){if(file){const r=new FileReader();r.onload=e=>{this.musicFile={name:file.name,data:e.target.result};document.getElementById('music_name').textContent='Файл: '+file.name;};r.readAsDataURL(file);}},
-    bindEvents(){
-        document.getElementById('f_hero').onchange=e=>this.handleImage(e.target.files[0],'hero');
-        document.getElementById('f_boss').onchange=e=>this.handleImage(e.target.files[0],'boss');
-        document.getElementById('f_loc').onchange=e=>this.handleLocations(e.target.files);
-        document.getElementById('f_music').onchange=e=>this.handleMusic(e.target.files[0]);
-        
-        document.getElementById('chk_title_screen').onchange=e=>{this.data.titleScreenOn=e.target.checked;this.updatePreview();};
+                const btnsDiv = document.getElementById('prev_q_btns');
+                btnsDiv.innerHTML = '';
+                const prevBtn = document.getElementById('prev_q_btn');
+                prevBtn.disabled = this.previewQuestIndex === 0;
+                const nextBtn = document.getElementById('next_q_btn');
+                nextBtn.disabled = this.previewQuestIndex >= this.quests.length - 1 || this.quests.length === 0;
 
-        ['hero','boss'].forEach(t=>{document.getElementById('i_'+t.charAt(0)+'_name').oninput=()=>this.updatePreview();});
-        const bindS=(id,target,key)=>document.getElementById(id).oninput=e=>{this.data[target][key]=e.target.value;this.updatePreview();};
-        bindS('r_h_size','hero','size');bindS('r_b_size','boss','size');bindS('r_h_glow','hero','gP');bindS('r_b_glow','boss','gP');bindS('r_h_speed','hero','speed');bindS('r_b_speed','boss','speed');
+                if (this.quests.length > 0) {
+                    if (currentQ.type === 'choice') {
+                        let answers = [{ t: currentQ.correct, c: true }];
+                        if (currentQ.wrongs[0]) answers.push({ t: currentQ.wrongs[0], c: false });
+                        if (currentQ.wrongs[1]) answers.push({ t: currentQ.wrongs[1], c: false });
+                        answers.sort(() => Math.random() - 0.5);
+                        let btnsHTML = answers.map(a => `<div class="q-dummy-btn" onclick="app.previewAnswer(this,${a.c})">${this.renderLatex(a.t)}</div>`).join('');
+                        btnsDiv.innerHTML = btnsHTML;
+                    } else {
+                        btnsDiv.innerHTML = `<input id="preview_input_ans" type="text" class="fx-input" style="width:150px; text-align:center;" placeholder="Ваш ответ..."><div class="q-dummy-btn" onclick="app.previewInputAnswer()">OK</div>`;
+                    }
+                }
 
-        document.getElementById('r_h_landing').oninput = e => {
-            this.data.hero.landingOffset = e.target.value;
-            document.getElementById('val_h_landing').innerText = e.target.value + '%';
-            this.updatePreview();
-        };
-        document.getElementById('r_b_landing').oninput = e => {
-            this.data.boss.landingOffset = e.target.value;
-            document.getElementById('val_b_landing').innerText = e.target.value + '%';
-            this.updatePreview();
-        };
-        document.getElementById('val_h_landing').innerText = this.data.hero.landingOffset + '%';
-        document.getElementById('val_b_landing').innerText = this.data.boss.landingOffset + '%';
-
-
-        document.getElementById('c_h_glow').oninput=e=>{this.data.hero.gC=e.target.value;this.updatePreview();};
-        document.getElementById('c_b_glow').oninput=e=>{this.data.boss.gC=e.target.value;this.updatePreview();};
-        document.getElementById('chk_timer').onchange=e=>{this.data.timerOn=e.target.checked;this.updatePreview();};
-        document.getElementById('r_timer').oninput=e=>{this.data.timer=e.target.value;document.getElementById('val_timer').innerText=e.target.value;this.updatePreview();};
-    },
-    renderQuestList(){
-        const list=document.getElementById('quest-list');
-        list.innerHTML='';
-        this.quests.forEach((q,i)=>{
-            const item=document.createElement('div');
-            item.className='list-item';
-            const questTextSpan = document.createElement('span');
-            questTextSpan.innerHTML = `${i+1}. ${this.renderLatex(q.text || 'Новый вопрос')}`;
+                const apply = (elId, d) => {
+                    const img = document.getElementById(elId);
+                    const charBox = img.parentNode;
+                    img.src = d.src;
+                    charBox.style.bottom = d.landingOffset + '%';
+                    img.style.width = d.size + '%';
+                    img.style.height = 'auto';
+                    img.style.filter = d.gP > 0 ? `drop-shadow(0 0 ${d.gP}px ${d.gC})` : 'none';
+                    let dur = (11 - d.speed) * 0.5;
+                    if (['shake', 'wobble'].includes(d.anim)) dur *= .5;
+                    let timing = 'ease-in-out';
+                    if (['glitch'].includes(d.anim)) timing = `steps(${Math.round(dur * 10)})`;
+                    if (['shake', 'spin', 'flip'].includes(d.anim)) timing = 'linear';
+                    img.style.animation = d.anim !== 'none' ? `fx-${d.anim} ${dur}s infinite ${timing}` : 'none';
+                    img.style.transformOrigin = d.anim === 'swing' ? 'top center' : 'center';
+                };
+                apply('img_hero', h);
+                apply('img_boss', b);
+            },
+previewAnswer(btn,isCorrect){btn.classList.add(isCorrect?'correct':'wrong');setTimeout(()=>btn.classList.remove('correct','wrong'),500);},
+        previewInputAnswer(){const input=document.getElementById('preview_input_ans');const q=this.quests[this.previewQuestIndex];if(!input||!q)return;const isCorrect=input.value.trim().toLowerCase()===q.correctInp.trim().toLowerCase();input.classList.add(isCorrect?'correct':'wrong');setTimeout(()=>input.classList.remove('correct','wrong'),800);},
+        generate(){
+            const d=this.data;
+            const langData={
+                ru:{title:document.getElementById('i_title_ru').value,win:document.getElementById('i_win_msg_ru').value,lose:document.getElementById('i_lose_msg_ru').value,play:document.getElementById('i_play_btn_ru').value},
+                en:{title:document.getElementById('i_title_en').value,win:document.getElementById('i_win_msg_en').value,lose:document.getElementById('i_lose_msg_en').value,play:document.getElementById('i_play_btn_en').value}
+            };
+            const qData={hName:document.getElementById('i_h_name').value,bName:document.getElementById('i_b_name').value};
+            const getAnimRule=o=>{if(o.anim==='none')return'';let dur=(11-o.speed)*0.5;if(['shake','wobble'].includes(o.anim))dur*=.5;let timing='ease-in-out';if(['glitch'].includes(o.anim))timing=`steps(${Math.round(dur*10)})`;if(['shake','spin','flip'].includes(o.anim))timing='linear';return`animation:fx-${o.anim} ${dur}s infinite ${timing};transform-origin:${o.anim==='swing'?'top center':'center'};`;};
             
-            const buttonsDiv = document.createElement('div');
-            buttonsDiv.innerHTML = `<button class="fx-btn" onclick="app.editQuest(${i})">✏️</button><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteQuest(${i})">🗑️</button>`;
+            const hImgStyle=`width:${d.hero.size}%; height:auto; filter:${d.hero.gP>0?`drop-shadow(0 0 ${d.hero.gP}px ${d.hero.gC})`:''};${getAnimRule(d.hero)}`;
+            const bImgStyle=`width:${d.boss.size}%; height:auto; filter:${d.boss.gP>0?`drop-shadow(0 0 ${d.boss.gP}px ${d.boss.gC})`:''};${getAnimRule(d.boss)}`;
 
-            item.appendChild(questTextSpan);
-            item.appendChild(buttonsDiv);
-            list.appendChild(item);
-        });
-        this.updatePreview();
-    },
-    addQuest(isFirst=false){const newQ={type:'choice',text:'Чему равно $x_{n+1}$?',correct:'$\\frac{1}{\\sqrt{n}}$',wrongs:['$n^{1/2}m/2$','$1/n^{1}n$'],correctInp:'1/sqrt(n)'};this.quests.push(newQ);if(!isFirst)this.renderQuestList();this.editQuest(this.quests.length-1);},
-    editQuest(index){this.currentQuestIndex=index;const q=this.quests[index];document.getElementById('editor-title').innerText=`ЗАДАНИЕ #${index+1}`;this.setQType(q.type);document.getElementById('i_q_text').value=q.text;document.getElementById('i_c_ans').value=q.correct;document.getElementById('i_w1').value=q.wrongs[0];document.getElementById('i_w2').value=q.wrongs[1];document.getElementById('i_in_ans').value=q.correctInp;document.getElementById('quest-list-container').style.display='none';document.getElementById('quest-editor-panel').style.display='block';},
-    saveQuest(){if(this.currentQuestIndex===-1)return;const q=this.quests[this.currentQuestIndex];q.type=document.querySelector('#quest-editor-panel .sub-tab-link.active').id==='b_choice'?'choice':'input';q.text=document.getElementById('i_q_text').value;if(q.type==='choice'){q.correct=document.getElementById('i_c_ans').value;q.wrongs=[document.getElementById('i_w1').value,document.getElementById('i_w2').value];}else{q.correctInp=document.getElementById('i_in_ans').value;}this.previewQuestIndex=this.currentQuestIndex;document.getElementById('quest-list-container').style.display='block';document.getElementById('quest-editor-panel').style.display='none';this.renderQuestList();},
-    deleteQuest(index){if(confirm(`Удалить задание #${index+1}?`)){this.quests.splice(index,1);this.previewQuestIndex=0;this.renderQuestList();}},
-    prevPreviewQuest(){if(this.previewQuestIndex>0){this.previewQuestIndex--;this.updatePreview();}},
-    nextPreviewQuest(){if(this.previewQuestIndex<this.quests.length-1){this.previewQuestIndex++;this.updatePreview();}},
-    
-    renderLatex(text) {
-        if (typeof katex === 'undefined' || !text) return text;
-        return text.replace(/\$\$([\s\S]*?)\$\$|\$([^\$]*?)\$/g, (match, display, inline) => {
-            if (display !== undefined) {
-                try { return katex.renderToString(display.trim(), { displayMode: true, throwOnError: false }); } catch (e) { return match; }
-            }
-            if (inline !== undefined) {
-                try { return katex.renderToString(inline.trim(), { displayMode: false, throwOnError: false }); } catch (e) { return match; }
-            }
-            return match;
-        });
-    },
+            const generatedOverlay = d.titleScreenOn ? `<div class="overlay" id="start-overlay"><div class="big-title">${langData[this.gameLang].title.replace(/\|/g, '<br>')}</div><button class="play-btn" onclick="startGame()"> ${langData[this.gameLang].play}</button></div>` : '';
 
-    updatePreview(){
-        const h=this.data.hero;
-        const b=this.data.boss;
-        
-        document.getElementById('stage_bg').style.backgroundImage=this.locations.length>0?`url(${this.locations[0].data})`:'none';
-        document.getElementById('p_h_name').innerText=document.getElementById('i_h_name').value;
-        document.getElementById('p_b_name').innerText=document.getElementById('i_b_name').value;
-        document.getElementById('p_timer').style.display=this.data.timerOn?'block':'none';
-        document.getElementById('p_timer').innerText=this.data.timerOn?(this.data.timer<10?'0'+this.data.timer:this.data.timer)+':00':'';
-        
-        const currentQ=this.quests[this.previewQuestIndex]||{text:'Настройте задания...'};
-        
-        const qTextElement = document.getElementById('prev_q_text');
-        if (this.quests.length > 0) {
-            qTextElement.innerHTML = this.renderLatex(currentQ.text || '');
-        } else {
-            qTextElement.innerText = "Настройте задания...";
-        }
-
-        const btnsDiv=document.getElementById('prev_q_btns');
-        btnsDiv.innerHTML='';
-        const prevBtn=document.getElementById('prev_q_btn');
-        prevBtn.disabled=this.previewQuestIndex===0;
-        const nextBtn=document.getElementById('next_q_btn');
-        nextBtn.disabled=this.previewQuestIndex>=this.quests.length-1||this.quests.length===0;
-
-        if(this.quests.length>0){
-            if(currentQ.type==='choice'){
-                let answers=[{t:currentQ.correct,c:true}];
-                if(currentQ.wrongs[0])answers.push({t:currentQ.wrongs[0],c:false});
-                if(currentQ.wrongs[1])answers.push({t:currentQ.wrongs[1],c:false});
-                answers.sort(()=>Math.random()-0.5);
-                let btnsHTML=answers.map(a=>`<div class="q-dummy-btn" onclick="app.previewAnswer(this,${a.c})">${this.renderLatex(a.t)}</div>`).join('');
-                btnsDiv.innerHTML=btnsHTML;
-            }else{
-                btnsDiv.innerHTML=`<input id="preview_input_ans" type="text" class="fx-input" style="width:150px; text-align:center;" placeholder="Ваш ответ..."><div class="q-dummy-btn" onclick="app.previewInputAnswer()">OK</div>`;
-            }
-        }
-        
-        const apply=(elId,d)=>{
-            const img=document.getElementById(elId);
-            const charBox = img.parentNode;
-            img.src=d.src;
-            charBox.style.bottom = d.landingOffset + '%'; 
-            img.style.width = d.size + '%';
-            img.style.height = 'auto';
-            img.style.filter=d.gP>0?`drop-shadow(0 0 ${d.gP}px ${d.gC})`:'none';
-            let dur=(11-d.speed)*0.5;
-            if(['shake','wobble'].includes(d.anim))dur*=.5;
-            let timing='ease-in-out';
-            if(['glitch'].includes(d.anim))timing=`steps(${Math.round(dur*10)})`;
-            if(['shake','spin','flip'].includes(d.anim))timing='linear';
-            img.style.animation=d.anim!=='none'?`fx-${d.anim} ${dur}s infinite ${timing}`:'none';
-            img.style.transformOrigin=d.anim==='swing'?'top center':'center';
-        };
-        apply('img_hero',h);
-        apply('img_boss',b);
-    },
-    previewAnswer(btn,isCorrect){btn.classList.add(isCorrect?'correct':'wrong');setTimeout(()=>btn.classList.remove('correct','wrong'),500);},
-    previewInputAnswer(){const input=document.getElementById('preview_input_ans');const q=this.quests[this.previewQuestIndex];if(!input||!q)return;const isCorrect=input.value.trim().toLowerCase()===q.correctInp.trim().toLowerCase();input.classList.add(isCorrect?'correct':'wrong');setTimeout(()=>input.classList.remove('correct','wrong'),800);},
-    generate(){
-        const d=this.data;
-        const langData={
-            ru:{title:document.getElementById('i_title_ru').value,win:document.getElementById('i_win_msg_ru').value,lose:document.getElementById('i_lose_msg_ru').value,play:document.getElementById('i_play_btn_ru').value},
-            en:{title:document.getElementById('i_title_en').value,win:document.getElementById('i_win_msg_en').value,lose:document.getElementById('i_lose_msg_en').value,play:document.getElementById('i_play_btn_en').value}
-        };
-        const qData={hName:document.getElementById('i_h_name').value,bName:document.getElementById('i_b_name').value};
-        const getAnimRule=o=>{if(o.anim==='none')return'';let dur=(11-o.speed)*0.5;if(['shake','wobble'].includes(o.anim))dur*=.5;let timing='ease-in-out';if(['glitch'].includes(o.anim))timing=`steps(${Math.round(dur*10)})`;if(['shake','spin','flip'].includes(o.anim))timing='linear';return`animation:fx-${o.anim} ${dur}s infinite ${timing};transform-origin:${o.anim==='swing'?'top center':'center'};`;};
-        
-        const hImgStyle=`width:${d.hero.size}%; height:auto; filter:${d.hero.gP>0?`drop-shadow(0 0 ${d.hero.gP}px ${d.hero.gC})`:''};${getAnimRule(d.hero)}`;
-        const bImgStyle=`width:${d.boss.size}%; height:auto; filter:${d.boss.gP>0?`drop-shadow(0 0 ${d.boss.gP}px ${d.boss.gC})`:''};${getAnimRule(d.boss)}`;
-
-        const generatedOverlay = d.titleScreenOn ? `<div class="overlay" id="start-overlay"><div class="big-title">${langData[this.gameLang].title.replace(/\|/g, '<br>')}</div><button class="play-btn" onclick="startGame()"> ${langData[this.gameLang].play}</button></div>` : '';
-
-        const katexScripts = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0KOVEMcAXPayaHecJVoINiJaN0rXJdGzUIFNPAPharIdhBtI65cSg" crossorigin="anonymous">
+            const katexScripts = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0KOVEMcAXPayaHecJVoINiJaN0rXJdGzUIFNPAPharIdhBtI65cSg" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"><\/script>`;
 
-        const script=`<script>
+            const script=`<script>
 let timerVal=${d.timer*60},timerOn=${d.timerOn},audioCtx=null,currentQIndex=-1,locIndex=0,isAnswered=false,battleState=50,isGameOver=false,gameStarted=false;
 const quests=${JSON.stringify(this.quests)},locations=${JSON.stringify(this.locations.map(l=>l.data))},langPack=${JSON.stringify(langData[this.gameLang])};
 const step=50/((quests.length||1));
@@ -457,6 +316,7 @@ function loadNextQuestion(){isAnswered=false;currentQIndex++;const isGameEnd=cur
 if(locations.length>0&&currentQIndex>0){locIndex=(locIndex+1)%locations.length;document.body.style.backgroundImage=\`url(\${locations[locIndex]})\`;}
 const q=quests[currentQIndex];
 const qTextEl=document.getElementById('q-text');
+// ИСПРАВЛЕНИЕ: Убран префикс (1/1) из сгенерированной игры
 qTextEl.innerHTML = renderKatexText(q.text);
 const p=document.getElementById('q-inputs');
 p.innerHTML='';
@@ -478,7 +338,8 @@ if(q.type==='choice'){
 }else{
     p.innerHTML=\`<div class="inp-area"><div class="inp-row"><input type="text" id="inp-ans" placeholder="..." autocomplete="off"><button class="game-btn" onclick="checkInput()">OK</button></div></div>\`;
 }}
-function showScore(targetId,text,color){const scorePopup=document.getElementById(targetId.replace('-wrap','-score-popup'));const targetEl=document.getElementById(targetId);const targetRect=targetEl.getBoundingClientRect();scorePopup.innerText=text;scorePopup.style.color=color;scorePopup.style.textShadow=\`0 0 10px \${color}\`;scorePopup.style.left=targetRect.left+targetRect.width/2+'px';scorePopup.style.top=targetRect.top-20+'px';scorePopup.classList.add('show');setTimeout(()=>{scorePopup.classList.remove('show');},1000);}const target=document.getElementById(targetId);const targetImg=document.getElementById(targetId.replace('-wrap','-img'));const battleGround=document.querySelector('.battle-ground');const startCharRect=attacker.getBoundingClientRect();const targetCharRect=target.getBoundingClientRect();const battleGroundRect=battleGround.getBoundingClientRect();const startX=(startCharRect.left+startCharRect.width/2)-battleGroundRect.left;const startY=(startCharRect.top+startCharRect.height/2)-battleGroundRect.top;const endX=(targetCharRect.left+targetCharRect.width/2)-battleGroundRect.left;const endY=(targetCharRect.top+targetCharRect.height/2)-battleGroundRect.top;projectile.style.background=color;projectile.style.boxShadow=\`0 0 15px \${color}, 0 0 25px \${color}\`;projectile.style.left=startX+'px';projectile.style.top=startY+'px';projectile.style.opacity='1';projectile.style.transform='scale(1)';setTimeout(()=>{projectile.style.left=endX+'px';projectile.style.top=endY+'px';},10);setTimeout(()=>{beep('hit');projectile.style.transform='scale(3)';projectile.style.opacity='0';targetImg.style.animation='fx-shake 0.4s';targetImg.style.filter=\`drop-shadow(0 0 25px \${color})\`;showScore(attackerId,scoreText,'var(--green)');setTimeout(()=>{targetImg.style.animation='';targetImg.style.filter='';},400);},550);}
+function showScore(targetId,text,color){const scorePopup=document.getElementById(targetId.replace('-wrap','-score-popup'));const targetEl=document.getElementById(targetId);const targetRect=targetEl.getBoundingClientRect();scorePopup.innerText=text;scorePopup.style.color=color;scorePopup.style.textShadow=\`0 0 10px \${color}\`;scorePopup.style.left=targetRect.left+targetRect.width/2+'px';scorePopup.style.top=targetRect.top-20+'px';scorePopup.classList.add('show');setTimeout(()=>{scorePopup.classList.remove('show');},1000);}
+function animateAttack(attackerId,targetId,color,scoreText){const projectile=document.getElementById('projectile');const attacker=document.getElementById(attackerId);const target=document.getElementById(targetId);const targetImg=document.getElementById(targetId.replace('-wrap','-img'));const battleGround=document.querySelector('.battle-ground');const startCharRect=attacker.getBoundingClientRect();const targetCharRect=target.getBoundingClientRect();const battleGroundRect=battleGround.getBoundingClientRect();const startX=(startCharRect.left+startCharRect.width/2)-battleGroundRect.left;const startY=(startCharRect.top+startCharRect.height/2)-battleGroundRect.top;const endX=(targetCharRect.left+targetCharRect.width/2)-battleGroundRect.left;const endY=(targetCharRect.top+targetCharRect.height/2)-battleGroundRect.top;projectile.style.background=color;projectile.style.boxShadow=\`0 0 15px \${color}, 0 0 25px \${color}\`;projectile.style.left=startX+'px';projectile.style.top=startY+'px';projectile.style.opacity='1';projectile.style.transform='scale(1)';setTimeout(()=>{projectile.style.left=endX+'px';projectile.style.top=endY+'px';},10);setTimeout(()=>{beep('hit');projectile.style.transform='scale(3)';projectile.style.opacity='0';targetImg.style.animation='fx-shake 0.4s';targetImg.style.filter=\`drop-shadow(0 0 25px \${color})\`;showScore(attackerId,scoreText,'var(--green)');setTimeout(()=>{targetImg.style.animation='';targetImg.style.filter='';},400);},550);}
 function checkChoice(b,isCor){if(!gameStarted)activateGame();if(isAnswered)return;isAnswered=true;b.parentElement.querySelectorAll('.game-btn').forEach(btn=>btn.disabled=true);if(isCor){handleCorrect(b);}else{handleWrong(b);const correctBtn=b.parentElement.querySelector('.game-btn[data-correct="true"]');if(correctBtn)correctBtn.style.background='var(--green)';}}
 function checkInput(){if(!gameStarted)activateGame();if(isAnswered)return;isAnswered=true;const i=document.getElementById('inp-ans');i.disabled=true;document.querySelector('.inp-area .game-btn').disabled=true;if(i.value.trim().toLowerCase()===(quests[currentQIndex].correctInp||'').trim().toLowerCase()){handleCorrect(i);}else{handleWrong(i);const hint=document.createElement('div');hint.className='correct-answer-hint';hint.innerText='Верный ответ: '+quests[currentQIndex].correctInp;i.closest('.inp-area').appendChild(hint);}}
 function handleCorrect(el){document.body.style.pointerEvents='none';animateAttack('hero-wrap','boss-wrap','var(--green)','+100');if(el.tagName==='BUTTON'){el.style.background='var(--green)';el.style.color='#000';}else{el.style.borderColor='var(--green)';}setTimeout(()=>{battleState=Math.min(100,battleState+step);updatePositionsAndProgress();document.body.style.pointerEvents='';if(battleState<100)loadNextQuestion();},1000);}
@@ -570,8 +431,9 @@ ${generatedOverlay}
 <div class="ui-panel" id="q-panel"><div class="q-text" id="q-text"></div><div id="q-inputs"></div></div>
 </div>${script}</body></html>`;
             const area=document.getElementById('hidden_code');area.value=`<iframe srcdoc="${html.replace(/"/g,'&quot;')}" width="100%" height="100%" frameborder="0" style="background:transparent;display:block"></iframe>`;area.select();document.execCommand('copy');const btn=document.getElementById('b_gen');const old=btn.innerText;btn.innerText="ГОТОВО!";btn.style.background="#fff";setTimeout(()=>{btn.innerText=old;btn.style.background="";},1500);
-        }
-    };
+        }            
+       };
     app.init();
 </script>
-function animateAttack(attackerId,targetId,color,scoreText){const projectile=document.getElementById('projectile');const attacker=document.getElementById(attackerId);
+</div>
+      
