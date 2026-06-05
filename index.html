@@ -352,8 +352,32 @@
             
             const currentQ=this.quests[this.previewQuestIndex]||{text:'Настройте задания...'};
             
+            // --- START OF FIX ---
             const qTextElement = document.getElementById('prev_q_text');
-            qTextElement.innerHTML = this.renderLatex((this.quests.length>0?`(${this.previewQuestIndex+1}/${this.quests.length}) `:'')+currentQ.text);
+            qTextElement.innerHTML = ''; // Очищаем предыдущее содержимое
+
+            if (this.quests.length > 0) {
+                const prefix = `(${this.previewQuestIndex+1}/${this.quests.length}) `;
+                qTextElement.appendChild(document.createTextNode(prefix)); // Добавляем префикс как обычный текст
+
+                const questionSpan = document.createElement('span');
+                qTextElement.appendChild(questionSpan);
+
+                // Рендерим текст вопроса с помощью KaTeX в этот span
+                if (typeof katex !== 'undefined' && currentQ.text) {
+                    try {
+                        katex.render(currentQ.text, questionSpan, { throwOnError: false, displayMode: false });
+                    } catch (e) {
+                        console.error("Katex rendering failed:", e);
+                        questionSpan.innerText = currentQ.text; // В случае ошибки показываем обычный текст
+                    }
+                } else {
+                    questionSpan.innerText = currentQ.text || ''; // Если KaTeX недоступен или нет текста
+                }
+            } else {
+                qTextElement.innerText = "Настройте задания...";
+            }
+            // --- END OF FIX ---
 
             const btnsDiv=document.getElementById('prev_q_btns');
             btnsDiv.innerHTML='';
