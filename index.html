@@ -60,6 +60,7 @@
         .q-dummy-btn { background: #333; color: #fff; padding: 8px 20px; border: 2px solid #555; border-radius: 5px; font-weight: 700; font-size: 12px; cursor: pointer; transition: 0.2s; }
         .q-dummy-btn.correct { background-color: var(--green); border-color: var(--green); color: #000; }
         .q-dummy-btn.wrong { background-color: var(--red); border-color: var(--red); }
+        .math-error-hint { color: var(--red); font-size: 10px; margin-top: 5px; text-align: center;} /* New CSS for math error hints */
         #quest-editor-panel, #location-list { display: none; }
         .list-item { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 11px; }
         .list-item button { font-size: 10px; padding: 4px 6px; margin-left: 4px; }
@@ -376,8 +377,10 @@
 
         // Helper function for math evaluation in editor preview
         evaluateMathExpression(expression) {
+            if (typeof math === 'undefined') {
+                return { value: NaN, error: 'Math.js library not loaded for preview.' };
+            }
             try {
-                // 'math' is globally available from the CDN script
                 const result = math.evaluate(expression);
                 // math.js can return various types, ensure it's a number for comparison
                 if (typeof result === 'number') {
@@ -386,12 +389,57 @@
                      // For math.js BigNumber or Fraction types, convert to primitive number
                     return { value: result.valueOf(), error: null };
                 }
-                return { value: NaN, error: 'Result is not a number.' };
+                return { value: NaN, error: 'Result is not a number or not directly evaluable to a number.' };
             } catch (e) {
                 return { value: NaN, error: e.message };
             }
         },
 
+        previewInputAnswer(){
+            const input=document.getElementById('preview_input_ans');
+            const q=this.quests[this.previewQuestIndex];
+            if(!input||!q)return;
+            
+            // Clear previous states
+            input.classList.remove('correct', 'wrong');
+            const oldHint = input.closest('.q-preview-btns').querySelector('.math-error-hint');
+            if (oldHint) oldHint.remove();
+
+            let isCorrect = false;
+            let errorMsg = '';
+
+            if (q.isMath) {
+                const userAnswer = this.evaluateMathExpression(input.value.trim());
+                const correctAnswer = this.evaluateMathExpression(q.correctInp.trim());
+
+                const EPSILON = 1e-9; // Tolerance for floating point comparisons
+
+                if (userAnswer.error || correctAnswer.error || isNaN(userAnswer.value) || isNaN(correctAnswer.value)) {
+                    isCorrect = false;
+                    errorMsg = userAnswer.error || correctAnswer.error || 'Неверный формат или некорректное выражение.';
+                } else {
+                    isCorrect = Math.abs(userAnswer.value - correctAnswer.value) < EPSILON;
+                }
+            } else {
+                isCorrect = input.value.trim().toLowerCase() === q.correctInp.trim().toLowerCase();
+            }
+
+            if (errorMsg) {
+                input.classList.add('wrong'); // Indicate error visually
+                const hint = document.createElement('div');
+                hint.className = 'math-error-hint'; // New class for error hints
+                hint.innerText = errorMsg;
+                input.closest('.q-preview-btns').appendChild(hint);
+                // Remove the error message after a short delay
+                setTimeout(() => {
+                    input.classList.remove('wrong');
+                    if (hint.parentNode) hint.remove();
+                }, 2000);
+            } else {
+                input.classList.add(isCorrect?'correct':'wrong');
+                setTimeout(()=>input.classList.remove('correct','wrong'),800);
+            }
+        },
         updatePreview(){
             const h=this.data.hero;
             const b=this.data.boss;
@@ -409,9 +457,9 @@
             const prevBtn=document.getElementById('prev_q_btn');
             prevBtn.disabled=this.previewQuestIndex===0;
             const nextBtn=document.getElementById('next_q_btn');
-            nextBtn.disabled=this.previewQuestIndex>=this.quests.length-1||this.quests.length===0;
+            nextBtn.disabled=this.previewQuestIndex >= (this.quests.length > 0 ? this.quests.length - 1 : 0); // Fix for next button on empty quests
 
-            if(this.quests.length > 0 && currentQ.type){ // Check currentQ.type to avoid errors if quest is undefined
+            if(this.quests.length > 0 && currentQ.type){ 
                 if(currentQ.type==='choice'){
                     let answers=[{t:currentQ.correct,c:true}];
                     if(currentQ.wrongs[0])answers.push({t:currentQ.wrongs[0],c:false});
@@ -422,6 +470,11 @@
                 }else{ // Type is 'input'
                     btnsDiv.innerHTML=`<input id="preview_input_ans" type="text" class="fx-input" style="width:150px; text-align:center;" placeholder="Ваш ответ..."><div class="q-dummy-btn" onclick="app.previewInputAnswer()">OK</div>`;
                 }
+            } else if (this.quests.length === 0) {
+                // If no quests, display placeholder or disable buttons
+                document.getElementById('prev_q_text').innerText = 'Нет доступных заданий. Добавьте новое задание.';
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
             }
             
             const apply=(elId,d)=>{
@@ -444,30 +497,6 @@
             apply('img_boss',b);
         },
         previewAnswer(btn,isCorrect){btn.classList.add(isCorrect?'correct':'wrong');setTimeout(()=>btn.classList.remove('correct','wrong'),500);},
-        previewInputAnswer(){
-            const input=document.getElementById('preview_input_ans');
-            const q=this.quests[this.previewQuestIndex];
-            if(!input||!q)return;
-            let isCorrect = false;
-
-            if (q.isMath) {
-                const userAnswer = this.evaluateMathExpression(input.value.trim());
-                const correctAnswer = this.evaluateMathExpression(q.correctInp.trim());
-
-                const EPSILON = 1e-9; // Tolerance for floating point comparisons
-
-                if (userAnswer.error || correctAnswer.error || isNaN(userAnswer.value) || isNaN(correctAnswer.value)) {
-                    isCorrect = false;
-                } else {
-                    isCorrect = Math.abs(userAnswer.value - correctAnswer.value) < EPSILON;
-                }
-            } else {
-                isCorrect = input.value.trim().toLowerCase() === q.correctInp.trim().toLowerCase();
-            }
-
-            input.classList.add(isCorrect?'correct':'wrong');
-            setTimeout(()=>input.classList.remove('correct','wrong'),800);
-        },
         generate(){
             const d=this.data;
             const langData={
@@ -503,6 +532,9 @@ const q=quests[currentQIndex];document.getElementById('q-text').innerText=q.text
 p.innerHTML=html;}
 
 function evaluateMathExpression(expression) {
+    if (typeof math === 'undefined') { // Added check
+        return { value: NaN, error: 'Ошибка: библиотека math.js не загружена.' };
+    }
     try {
         const result = math.evaluate(expression);
         if (typeof result === 'number') {
@@ -510,7 +542,7 @@ function evaluateMathExpression(expression) {
         } else if (result && typeof result.valueOf === 'function' && typeof result.valueOf() === 'number') {
              return { value: result.valueOf(), error: null };
         }
-        return { value: NaN, error: 'Result is not a number.' };
+        return { value: NaN, error: 'Результат не является числом.' };
     } catch (e) {
         return { value: NaN, error: e.message };
     }
@@ -533,7 +565,7 @@ function checkInput(){
     const oldHint = i.closest('.inp-area').querySelector('.correct-answer-hint');
     if (oldHint) oldHint.remove();
 
-    if (currentQ.isMath) {
+    if (currentQ.isMath) { // Math question logic
         const userAnswer = evaluateMathExpression(i.value.trim());
         const correctAnswer = evaluateMathExpression(currentQ.correctInp.trim());
 
@@ -544,12 +576,12 @@ function checkInput(){
             const hint = document.createElement('div');
             hint.className = 'correct-answer-hint';
             hint.style.color = 'var(--red)';
-            hint.innerText = 'Неверный формат или некорректное выражение!'; // More specific error
+            hint.innerText = userAnswer.error || correctAnswer.error || 'Неверный формат или некорректное выражение!';
             i.closest('.inp-area').appendChild(hint);
         } else {
             isCorrect = Math.abs(userAnswer.value - correctAnswer.value) < EPSILON;
         }
-    } else {
+    } else { // Regular text input logic
         isCorrect = i.value.trim().toLowerCase() === (currentQ.correctInp || '').trim().toLowerCase();
     }
 
