@@ -55,7 +55,10 @@
         
         .char-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: 0.3s; }
         .quest-dock { position: absolute; bottom: 0; left: 0; right: 0; background: var(--bg-panel); border-top: 3px solid var(--cyan); padding: 15px; z-index: 10; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
-        .q-preview-text { color: #fff; font-size: 18px; font-weight: 700; text-align: center; margin-top: 20px; }
+        .q-preview-text { 
+            color: #fff; font-size: 18px; font-weight: 700; text-align: center; margin-top: 20px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
         .q-preview-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
         .q-dummy-btn { background: #333; color: #fff; padding: 8px 20px; border: 2px solid #555; border-radius: 5px; font-weight: 700; font-size: 12px; cursor: pointer; transition: 0.2s; }
         .q-dummy-btn.correct { background-color: var(--green); border-color: var(--green); color: #000; }
@@ -67,8 +70,16 @@
         .btn-generate { background: var(--green); color: #000; padding: 12px 25px; width: 100%; font-size: 14px; font-family: 'Rajdhani', sans-serif; font-weight: 700; text-transform: uppercase; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 0 15px var(--green); transition: 0.3s; }
         .btn-generate:hover { box-shadow: 0 0 30px var(--green); filter: brightness(1.2); }
 
+        /* KaTeX specific styling */
+        .katex { font-size: 1em; } /* Adjust as needed */
+        .katex-display > .katex { margin-left: auto !important; margin-right: auto !important; } /* Center display math */
+
         @keyframes fx-idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes fx-float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-15px) rotate(2deg)}}@keyframes fx-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}@keyframes fx-shake{0%{transform:translate(1px, 1px)}20%{transform:translate(-3px, 0px)}40%{transform:translate(1px, -1px)}60%{transform:translate(-3px, 1px)}80%{transform:translate(-1px, -1px)}100%{transform:translate(1px, -2px)}}@keyframes fx-glitch{0%{transform:translate(0)}20%{transform:translate(-2px, 2px)}40%{transform:translate(-2px, -2px)}60%{transform:translate(2px, 2px)}80%{transform:translate(2px, -2px)}100%{transform:translate(0)}}@keyframes fx-spin{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}@keyframes fx-neon{0%,100%{opacity:1;filter:brightness(1)}50%{opacity:0.8;filter:brightness(1.5)}}@keyframes fx-wobble{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}@keyframes fx-swing{0%{transform:rotate(0deg)}20%{transform:rotate(15deg)}40%{transform:rotate(-10deg)}60%{transform:rotate(5deg)}80%{transform:rotate(-5deg)}100%{transform:rotate(0deg)}}@keyframes fx-bounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-30px)}60%{transform:translateY(-15px)}}@keyframes fx-flip{0%{transform:rotateY(0deg)}100%{transform:rotateY(360deg)}}@keyframes fx-ghost{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.05)}}
     </style>
+    <!-- KaTeX CDN links for the editor's preview -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" integrity="sha384-wcIxkf4k55qNTdCae0bD2rwfZEFGW5dyLKqYE6nKOn/w7KTUXxkjgX+cWee+NkHg" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" integrity="sha384-h0Lk9hPFJe0GGUaFNFRtS40L+mEvmamgktjQ/QyL/sYg/YRprrEsLz58sXg+Ew" crossorigin="anonymous"></script>
+
     <div class="view-editor">
         <div class="sidebar">
             <div class="sidebar-content">
@@ -133,7 +144,7 @@
                     </div>
                     <div class="control-group"><span class="control-label">Язык Игры</span><div class="sub-tabs" style="padding:0 0 10px 0;"><button class="sub-tab-link active" onclick="app.setGameLang('ru')">RU</button><button class="sub-tab-link" onclick="app.setGameLang('en')">EN</button></div><div id="lang_ru_fields"><label style="font-size:9px;color:#888;">Заголовок ( | = перенос):</label><input type="text" class="fx-input" id="i_title_ru" value="БИТВА|С БОССОМ"><label style="font-size:9px;color:#888;">Победа:</label><input type="text" class="fx-input" id="i_win_msg_ru" value="ТЫ ПОБЕДИЛ!"><label style="font-size:9px;color:#888;">Поражение:</label><input type="text" class="fx-input" id="i_lose_msg_ru" value="ТЫ ПРОИГРАЛ!"><label style="font-size:9px;color:#888;">Кнопка старт:</label><input type="text" class="fx-input" id="i_play_btn_ru" value="ИГРАТЬ"></div><div id="lang_en_fields" style="display:none;"><label style="font-size:9px;color:#888;">Title ( | = new line):</label><input type="text" class="fx-input" id="i_title_en" value="BOSS|BATTLE"><label style="font-size:9px;color:#888;">Win:</label><input type="text" class="fx-input" id="i_win_msg_en" value="YOU WIN!"><label style="font-size:9px;color:#888;">Lose:</label><input type="text" class="fx-input" id="i_lose_msg_en" value="YOU LOSE!"><label style="font-size:9px;color:#888;">Start Button:</label><input type="text" class="fx-input" id="i_play_btn_en" value="PLAY"></div></div>
                     <div id="quest-list-container"><div class="control-group"><span class="control-label">Список заданий</span><div id="quest-list" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;"></div><button class="fx-btn" style="width:100%" onclick="app.addQuest()">+ ДОБАВИТЬ ЗАДАНИЕ</button></div></div>
-                    <div id="quest-editor-panel"><div class="control-group"><span class="control-label" id="editor-title">РЕДАКТОР</span><div class="sub-tabs"><button class="sub-tab-link active" onclick="app.setQType('choice')" id="b_choice">ВЫБОР</button><button class="sub-tab-link" onclick="app.setQType('input')" id="b_input">ВВОД</button></div><span class="control-label">Текст вопроса</span><textarea class="fx-textarea" id="i_q_text" rows="2"></textarea><div id="area_choice"><span class="control-label" style="color:var(--green)">Верный ответ</span><input type="text" class="fx-input" id="i_c_ans"><span class="control-label" style="color:var(--primary)">Неверные ответы</span><input type="text" class="fx-input" id="i_w1"><input type="text" class="fx-input" id="i_w2"></div><div id="area_input" style="display:none"><span class="control-label" style="color:var(--green)">Правильный текст</span><input type="text" class="fx-input" id="i_in_ans"></div><button class="fx-btn" style="width:100%;margin-top:10px;background:var(--green);color:#000;border-color:var(--green)" onclick="app.saveQuest()">СОХРАНИТЬ</button></div></div>
+                    <div id="quest-editor-panel"><div class="control-group"><span class="control-label" id="editor-title">РЕДАКТОР</span><div class="sub-tabs"><button class="sub-tab-link active" onclick="app.setQType('choice')" id="b_choice">ВЫБОР</button><button class="sub-tab-link" onclick="app.setQType('input')" id="b_input">ВВОД</button></div><span class="control-label">Текст вопроса (можно использовать $...$ или $$...$$ для LaTeX)</span><textarea class="fx-textarea" id="i_q_text" rows="2"></textarea><div id="area_choice"><span class="control-label" style="color:var(--green)">Верный ответ (можно использовать $...$)</span><input type="text" class="fx-input" id="i_c_ans"><span class="control-label" style="color:var(--primary)">Неверные ответы (можно использовать $...$)</span><input type="text" class="fx-input" id="i_w1"><input type="text" class="fx-input" id="i_w2"></div><div id="area_input" style="display:none"><span class="control-label" style="color:var(--green)">Правильный текст/числовой ответ (без LaTeX, для сравнения)</span><input type="text" class="fx-input" id="i_in_ans"></div><button class="fx-btn" style="width:100%;margin-top:10px;background:var(--green);color:#000;border-color:var(--green)" onclick="app.saveQuest()">СОХРАНИТЬ</button></div></div>
                 </div>
             </div>
             <div class="gen-panel"><button class="btn-generate" onclick="app.generate()" id="b_gen">СКОПИРОВАТЬ КОД</button></div>
@@ -175,7 +186,7 @@
             this.renderAnims('hero');
             this.renderAnims('boss');
             this.bindEvents();
-            this.addQuest(true);
+            this.addQuest(true); // Add initial quest with LaTeX example
             this.updatePreview();
         },
         setMainTab(t){document.querySelectorAll('.main-tab-link').forEach(e=>e.classList.remove('active'));document.querySelector(`[onclick="app.setMainTab('${t}')"]`).classList.add('active');document.getElementById('sec_chars').classList.toggle('show',t==='chars');document.getElementById('sec_quests').classList.toggle('show',t==='quests');},
@@ -325,9 +336,55 @@
             document.getElementById('r_timer').oninput=e=>{this.data.timer=e.target.value;document.getElementById('val_timer').innerText=e.target.value;this.updatePreview();};
         },
         renderQuestList(){const list=document.getElementById('quest-list');list.innerHTML='';this.quests.forEach((q,i)=>{const item=document.createElement('div');item.className='list-item';item.innerHTML=`<span>${i+1}. ${q.text||'Новый вопрос'}</span><div><button class="fx-btn" onclick="app.editQuest(${i})">✏️</button><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteQuest(${i})">🗑️</button></div>`;list.appendChild(item);});this.updatePreview();},
-        addQuest(isFirst=false){const newQ={type:'choice',text:'Сколько будет 2 + 2?',correct:'4',wrongs:['5','22'],correctInp:'4'};this.quests.push(newQ);if(!isFirst)this.renderQuestList();this.editQuest(this.quests.length-1);},
+        
+        // Helper function to render LaTeX or plain text
+        renderLatexOrText(element, content) {
+            // Check if KaTeX is loaded and if content suggests it's LaTeX
+            // Content suggesting LaTeX: contains '$' or '\' (e.g., \frac, \sqrt)
+            if (typeof katex === 'undefined' || !content || (!content.includes('$') && !content.includes('\\'))) {
+                element.innerText = content; // Fallback to plain text
+                return;
+            }
+
+            try {
+                let latexToRender = content;
+                let displayMode = false;
+
+                // Strip delimiters for renderToString, determine displayMode
+                if (content.startsWith('$$') && content.endsWith('$$')) {
+                    latexToRender = content.substring(2, content.length - 2);
+                    displayMode = true;
+                } else if (content.startsWith('$') && content.endsWith('$')) {
+                    latexToRender = content.substring(1, content.length - 1);
+                    displayMode = false;
+                }
+                // If no explicit delimiters, assume inline mode if it contains LaTeX commands.
+
+                element.innerHTML = katex.renderToString(latexToRender, {
+                    throwOnError: false, // Do not throw, return error HTML
+                    displayMode: displayMode,
+                });
+            } catch (e) {
+                console.error('KaTeX rendering error for:', content, e);
+                element.innerText = content; // Fallback
+            }
+        },
+
+        addQuest(isFirst=false){
+            // Default quest using LaTeX
+            const newQ={
+                type:'choice',
+                text:'Сколько будет $\\frac{1}{2} + \\frac{1}{2}$?',
+                correct:'$1$',
+                wrongs:['$0$','$\\frac{1}{4}$'],
+                correctInp:'1' // Correct input for string comparison
+            };
+            this.quests.push(newQ);
+            if(!isFirst)this.renderQuestList();
+            this.editQuest(this.quests.length-1);
+        },
         editQuest(index){this.currentQuestIndex=index;const q=this.quests[index];document.getElementById('editor-title').innerText=`ЗАДАНИЕ #${index+1}`;this.setQType(q.type);document.getElementById('i_q_text').value=q.text;document.getElementById('i_c_ans').value=q.correct;document.getElementById('i_w1').value=q.wrongs[0];document.getElementById('i_w2').value=q.wrongs[1];document.getElementById('i_in_ans').value=q.correctInp;document.getElementById('quest-list-container').style.display='none';document.getElementById('quest-editor-panel').style.display='block';},
-        saveQuest(){if(this.currentQuestIndex===-1)return;const q=this.quests[this.currentQuestIndex];q.type=document.querySelector('#quest-editor-panel .sub-tab-link.active').id==='b_choice'?'choice':'input';q.text=document.getElementById('i_q_text').value;if(q.type==='choice'){q.correct=document.getElementById('i_c_ans').value;q.wrongs=[document.getElementById('i_w1').value,document.getElementById('i_w2').value];}else{q.correctInp=document.getElementById('i_in_ans').value;}this.previewQuestIndex=this.currentQuestIndex;document.getElementById('quest-list-container').style.display='block';document.getElementById('quest-editor-panel').style.display='none';this.renderQuestList();},
+        saveQuest(){if(this.currentQuestIndex===-1)return;const q=this.quests[this.currentQIndex];q.type=document.querySelector('#quest-editor-panel .sub-tab-link.active').id==='b_choice'?'choice':'input';q.text=document.getElementById('i_q_text').value;if(q.type==='choice'){q.correct=document.getElementById('i_c_ans').value;q.wrongs=[document.getElementById('i_w1').value,document.getElementById('i_w2').value];}else{q.correctInp=document.getElementById('i_in_ans').value;}this.previewQuestIndex=this.currentQIndex;document.getElementById('quest-list-container').style.display='block';document.getElementById('quest-editor-panel').style.display='none';this.renderQuestList();},
         deleteQuest(index){if(confirm(`Удалить задание #${index+1}?`)){this.quests.splice(index,1);this.previewQuestIndex=0;this.renderQuestList();}},
         prevPreviewQuest(){if(this.previewQuestIndex>0){this.previewQuestIndex--;this.updatePreview();}},
         nextPreviewQuest(){if(this.previewQuestIndex<this.quests.length-1){this.previewQuestIndex++;this.updatePreview();}},
@@ -342,7 +399,19 @@
             document.getElementById('p_timer').innerText=this.data.timerOn?(this.data.timer<10?'0'+this.data.timer:this.data.timer)+':00':'';
             
             const currentQ=this.quests[this.previewQuestIndex]||{text:'Настройте задания...'};
-            document.getElementById('prev_q_text').innerText=(this.quests.length>0?`(${this.previewQuestIndex+1}/${this.quests.length}) `:'')+currentQ.text;
+            const questionTextElement = document.getElementById('prev_q_text');
+            questionTextElement.innerHTML = ''; // Clear previous content
+
+            // Add quest index as plain text
+            const indexSpan = document.createElement('span');
+            indexSpan.innerText = (this.quests.length > 0 ? `(${this.previewQuestIndex + 1}/${this.quests.length}) ` : '');
+            questionTextElement.appendChild(indexSpan);
+
+            // Render the actual question text using the helper
+            const mathContentSpan = document.createElement('span');
+            this.renderLatexOrText(mathContentSpan, currentQ.text);
+            questionTextElement.appendChild(mathContentSpan);
+
             const btnsDiv=document.getElementById('prev_q_btns');
             btnsDiv.innerHTML='';
             const prevBtn=document.getElementById('prev_q_btn');
@@ -356,10 +425,26 @@
                     if(currentQ.wrongs[0])answers.push({t:currentQ.wrongs[0],c:false});
                     if(currentQ.wrongs[1])answers.push({t:currentQ.wrongs[1],c:false});
                     answers.sort(()=>Math.random()-0.5);
-                    let btnsHTML=answers.map(a=>`<div class="q-dummy-btn" onclick="app.previewAnswer(this,${a.c})">${a.t}</div>`).join('');
+                    
+                    let btnsHTML = answers.map(a => {
+                        const tempDiv = document.createElement('div');
+                        this.renderLatexOrText(tempDiv, a.t);
+                        return `<div class="q-dummy-btn" onclick="app.previewAnswer(this,${a.c})">${tempDiv.innerHTML}</div>`;
+                    }).join('');
                     btnsDiv.innerHTML=btnsHTML;
                 }else{
-                    btnsDiv.innerHTML=`<input id="preview_input_ans" type="text" class="fx-input" style="width:150px; text-align:center;" placeholder="Ваш ответ..."><div class="q-dummy-btn" onclick="app.previewInputAnswer()">OK</div>`;
+                    // For input type, the input box is still plain text.
+                    // The correct answer hint should show rendered LaTeX if it contains it.
+                    let hintHTML = '';
+                    if (currentQ.correctInp && (currentQ.correctInp.includes('$') || currentQ.correctInp.includes('\\'))) {
+                        const tempDiv = document.createElement('div');
+                        this.renderLatexOrText(tempDiv, currentQ.correctInp);
+                        hintHTML = `<div style="font-size:12px; margin-top:5px; color:#888;">Ожидается: ${tempDiv.innerHTML}</div>`;
+                    } else if (currentQ.correctInp) {
+                        hintHTML = `<div style="font-size:12px; margin-top:5px; color:#888;">Ожидается: ${currentQ.correctInp}</div>`;
+                    }
+
+                    btnsDiv.innerHTML=`<input id="preview_input_ans" type="text" class="fx-input" style="width:150px; text-align:center;" placeholder="Ваш ответ..."><div class="q-dummy-btn" onclick="app.previewInputAnswer()">OK</div>${hintHTML}`;
                 }
             }
             
@@ -412,14 +497,71 @@ document.getElementById('game-root').style.opacity='1';activateGame();loadNextQu
 function startTimer(){const e=document.getElementById('timer-disp');const i=setInterval(()=>{if(isGameOver){clearInterval(i);return;}
 timerVal--;let m=Math.floor(timerVal/60);let s=timerVal%60;e.innerText=(m<10?'0'+m:m)+':'+(s<10?'0'+s:s);if(timerVal<=0){clearInterval(i);endGame(battleState>50);}},1000);}
 function updatePositionsAndProgress(){const heroWrap=document.getElementById('hero-wrap');const bossWrap=document.getElementById('boss-wrap');const barH=document.getElementById('bar-h');const barB=document.getElementById('bar-b');const heroAdvantage=battleState-50;const heroMove=Math.max(0,heroAdvantage)*2;const bossMove=Math.max(0,-heroAdvantage)*2;heroWrap.style.transform=\`translateX(\${heroMove}%)\`;bossWrap.style.transform=\`translateX(-\${bossMove}%)\`;barH.style.width=\`\${battleState}%\`;barB.style.width=\`\${100-battleState}%\`;if(battleState>=100)endGame(true);else if(battleState<=0)endGame(false);}
+
+// Helper function to render LaTeX or plain text in the generated game
+function renderLatexOrTextGame(element, content) {
+    if (typeof katex === 'undefined' || !content || (!content.includes('$') && !content.includes('\\'))) {
+        element.innerText = content;
+        return;
+    }
+    try {
+        let latexToRender = content;
+        let displayMode = false;
+        if (content.startsWith('$$') && content.endsWith('$$')) {
+            latexToRender = content.substring(2, content.length - 2);
+            displayMode = true;
+        } else if (content.startsWith('$') && content.endsWith('$')) {
+            latexToRender = content.substring(1, content.length - 1);
+            displayMode = false;
+        }
+        element.innerHTML = katex.renderToString(latexToRender, {
+            throwOnError: false,
+            displayMode: displayMode
+        });
+    } catch (e) {
+        console.error('KaTeX rendering error for:', content, e);
+        element.innerText = content; // Fallback
+    }
+}
+
 function loadNextQuestion(){isAnswered=false;currentQIndex++;const isGameEnd=currentQIndex>=quests.length;if(isGameEnd){endGame(battleState>50);return;}
 if(locations.length>0&&currentQIndex>0){locIndex=(locIndex+1)%locations.length;document.body.style.backgroundImage=\`url(\${locations[locIndex]})\`;}
-const q=quests[currentQIndex];document.getElementById('q-text').innerText=q.text;const p=document.getElementById('q-inputs');let html='';if(q.type==='choice'){const ans=[{t:q.correct,c:true}];q.wrongs.forEach(w=>{if(w)ans.push({t:w,c:false});});ans.sort(()=>Math.random()-0.5);html=\`<div class="btns">\${ans.map(a=>\`<button data-correct="\${a.c}" class="game-btn" onclick="checkChoice(this,\${a.c})">\${a.t}</button>\`).join('')}</div>\`;}else{html=\`<div class="inp-area"><div class="inp-row"><input type="text" id="inp-ans" placeholder="..." autocomplete="off"><button class="game-btn" onclick="checkInput()">OK</button></div></div>\`;}
+const q=quests[currentQIndex];
+const qTextElement = document.getElementById('q-text');
+renderLatexOrTextGame(qTextElement, q.text); // Use helper for question text
+
+const p=document.getElementById('q-inputs');let html='';
+if(q.type==='choice'){
+    const ans=[{t:q.correct,c:true}];
+    q.wrongs.forEach(w=>{if(w)ans.push({t:w,c:false});});
+    ans.sort(()=>Math.random()-0.5);
+    html=`<div class="btns">${ans.map(a=>{
+        const tempDiv = document.createElement('div');
+        renderLatexOrTextGame(tempDiv, a.t); // Use helper for choice answers
+        return `<button data-correct="\${a.c}" class="game-btn" onclick="checkChoice(this,\${a.c})">\${tempDiv.innerHTML}</button>`;
+    }).join('')}</div>`;
+}else{
+    html=`<div class="inp-area"><div class="inp-row"><input type="text" id="inp-ans" placeholder="..." autocomplete="off"><button class="game-btn" onclick="checkInput()">OK</button></div></div>`;
+    // Add LaTeX hint for input questions
+    if (q.correctInp && (q.correctInp.includes('$') || q.correctInp.includes('\\'))) {
+        const tempDiv = document.createElement('div');
+        renderLatexOrTextGame(tempDiv, q.correctInp);
+        html += `<div class="correct-answer-hint">Верный ответ: ${tempDiv.innerHTML}</div>`;
+    } else if (q.correctInp) {
+        html += `<div class="correct-answer-hint">Верный ответ: ${q.correctInp}</div>`;
+    }
+}
 p.innerHTML=html;}
 function showScore(targetId,text,color){const scorePopup=document.getElementById(targetId.replace('-wrap','-score-popup'));const targetEl=document.getElementById(targetId);const targetRect=targetEl.getBoundingClientRect();scorePopup.innerText=text;scorePopup.style.color=color;scorePopup.style.textShadow=\`0 0 10px \${color}\`;scorePopup.style.left=targetRect.left+targetRect.width/2+'px';scorePopup.style.top=targetRect.top-20+'px';scorePopup.classList.add('show');setTimeout(()=>{scorePopup.classList.remove('show');},1000);}
 function animateAttack(attackerId,targetId,color,scoreText){const projectile=document.getElementById('projectile');const attacker=document.getElementById(attackerId);const target=document.getElementById(targetId);const targetImg=document.getElementById(targetId.replace('-wrap','-img'));const battleGround=document.querySelector('.battle-ground');const startCharRect=attacker.getBoundingClientRect();const targetCharRect=target.getBoundingClientRect();const battleGroundRect=battleGround.getBoundingClientRect();const startX=(startCharRect.left+startCharRect.width/2)-battleGroundRect.left;const startY=(startCharRect.top+startCharRect.height/2)-battleGroundRect.top;const endX=(targetCharRect.left+targetCharRect.width/2)-battleGroundRect.left;const endY=(targetCharRect.top+targetCharRect.height/2)-battleGroundRect.top;projectile.style.background=color;projectile.style.boxShadow=\`0 0 15px \${color}, 0 0 25px \${color}\`;projectile.style.left=startX+'px';projectile.style.top=startY+'px';projectile.style.opacity='1';projectile.style.transform='scale(1)';setTimeout(()=>{projectile.style.left=endX+'px';projectile.style.top=endY+'px';},10);setTimeout(()=>{beep('hit');projectile.style.transform='scale(3)';projectile.style.opacity='0';targetImg.style.animation='fx-shake 0.4s';targetImg.style.filter=\`drop-shadow(0 0 25px \${color})\`;showScore(attackerId,scoreText,'var(--green)');setTimeout(()=>{targetImg.style.animation='';targetImg.style.filter='';},400);},550);}
 function checkChoice(b,isCor){if(!gameStarted)activateGame();if(isAnswered)return;isAnswered=true;document.querySelectorAll('.btns .game-btn').forEach(btn=>btn.disabled=true);if(isCor){handleCorrect(b);}else{handleWrong(b);const correctBtn=document.querySelector('.game-btn[data-correct=\\"true\\"]');if(correctBtn)correctBtn.style.background='var(--green)';}}
-function checkInput(){if(!gameStarted)activateGame();if(isAnswered)return;isAnswered=true;const i=document.getElementById('inp-ans');i.disabled=true;document.querySelector('.inp-area .game-btn').disabled=true;if(i.value.trim().toLowerCase()===(quests[currentQIndex].correctInp||'').trim().toLowerCase()){handleCorrect(i);}else{handleWrong(i);const hint=document.createElement('div');hint.className='correct-answer-hint';hint.innerText='Верный ответ: '+quests[currentQIndex].correctInp;i.closest('.inp-area').appendChild(hint);}}
+function checkInput(){if(!gameStarted)activateGame();if(isAnswered)return;isAnswered=true;const i=document.getElementById('inp-ans');i.disabled=true;document.querySelector('.inp-area .game-btn').disabled=true;if(i.value.trim().toLowerCase()===(quests[currentQIndex].correctInp||'').trim().toLowerCase()){handleCorrect(i);}else{handleWrong(i);
+    // Display hint from correctInp (could be LaTeX or plain text)
+    const hintDiv = document.createElement('div');
+    hintDiv.className = 'correct-answer-hint';
+    renderLatexOrTextGame(hintDiv, 'Верный ответ: ' + quests[currentQIndex].correctInp);
+    i.closest('.inp-area').appendChild(hintDiv);
+}}
 function handleCorrect(el){document.body.style.pointerEvents='none';animateAttack('hero-wrap','boss-wrap','var(--green)','+100');if(el.tagName==='BUTTON'){el.style.background='var(--green)';el.style.color='#000';}else{el.style.borderColor='var(--green)';}setTimeout(()=>{battleState=Math.min(100,battleState+step);updatePositionsAndProgress();document.body.style.pointerEvents='';if(battleState<100)loadNextQuestion();},1000);}
 function handleWrong(el){document.body.style.pointerEvents='none';animateAttack('boss-wrap','hero-wrap','var(--red)','+100');if(el.tagName==='BUTTON'){el.style.background='var(--red)';}else{el.style.borderColor='var(--red)';}setTimeout(()=>{battleState=Math.max(0,battleState-step);updatePositionsAndProgress();document.body.style.pointerEvents='';if(battleState>0)loadNextQuestion();},1000);}
 function endGame(didWin){if(isGameOver)return;isGameOver=true;document.body.style.pointerEvents='none';if(document.getElementById('timer-wrap'))document.getElementById('timer-wrap').style.display='none';const p=document.getElementById('q-panel');p.innerHTML="";let msg,color,winnerImg,winnerId;if(didWin===true){msg=langPack.win;color='var(--green)';document.getElementById('boss-img').style.opacity='0';winnerImg=document.getElementById('hero-img');winnerId='hero-wrap';}else{msg=langPack.lose;color='var(--red)';document.getElementById('hero-img').style.opacity='0';winnerImg=document.getElementById('boss-img');winnerId='boss-wrap';}
@@ -472,7 +614,10 @@ body{margin:0;overflow:hidden;font-family:'Rajdhani',sans-serif;user-select:none
 .score-popup{position:fixed;z-index:101;opacity:0;font-family:'Press Start 2P',cursive;font-size:20px;transform:translateX(-50%);pointer-events:none;}
 .score-popup.show{animation:float-up-fade 1s ease-out forwards;}
 .ui-panel{position:absolute; bottom:0; left:0; right:0; background:rgba(18,16,30,0.95);padding:20px;border-top:4px solid #00e5ff;display:flex;flex-direction:column;align-items:center;gap:15px;min-height:20%;box-shadow:0 -10px 50px rgba(0,0,0,0.5);z-index:20;}
-.q-text{color:#fff;font-size:24px;font-weight:700;text-align:center;font-family:'Montserrat',sans-serif;}
+.q-text{
+    color:#fff;font-size:24px;font-weight:700;text-align:center;font-family:'Montserrat',sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
 .btns{display:flex;gap:15px;flex-wrap:wrap;justify-content:center;width:100%;}
 .game-btn{background:#333;border:2px solid #555;color:#fff;padding:15px 30px;font-family:inherit;font-weight:700;font-size:18px;cursor:pointer;text-transform:uppercase;border-radius:8px;transition:0.1s;min-width:150px;}
 .game-btn:hover{background:#555;border-color:#fff;transform:translateY(-2px);}
@@ -481,7 +626,11 @@ body{margin:0;overflow:hidden;font-family:'Rajdhani',sans-serif;user-select:none
 .inp-row{display:flex;gap:10px;}
 input[type=text]{padding:15px;border-radius:6px;border:2px solid #fff;font-family:inherit;font-weight:700;background:#000;color:#fff;font-size:18px;outline:none; transition: 0.3s;}
 .correct-answer-hint { color: var(--green); margin-top: 5px; font-size: 16px; font-weight: 700; }
-</style></head><body>
+.katex { font-size: 1em; } /* Adjust as needed */
+.katex-display > .katex { margin-left: auto !important; margin-right: auto !important; } /* Center display math in generated game */
+</style>
+</head>
+<body>
 ${this.musicFile?`<audio id="bg-music" src="${this.musicFile.data}" loop></audio>`:''}
 <div id="projectile"></div>
 ${generatedOverlay}
@@ -503,7 +652,11 @@ ${generatedOverlay}
     </div>
 </div></div>
 <div class="ui-panel" id="q-panel"><div class="q-text" id="q-text"></div><div id="q-inputs"></div></div>
-</div>${script}</body></html>`;
+</div>
+<!-- KaTeX CDN links for the generated game -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" integrity="sha384-wcIxkf4k55qNTdCae0bD2rwfZEFGW5dyLKqYE6nKOn/w7KTUXxkjgX+cWee+NkHg" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" integrity="sha384-h0Lk9hPFJe0GGUaFNFRtS40L+mEvmamgktjQ/QyL/sYg/YRprrEsLz58sXg+Ew" crossorigin="anonymous"></script>
+${script}</body></html>`;
             const area=document.getElementById('hidden_code');area.value=`<iframe srcdoc="${html.replace(/"/g,'&quot;')}" width="100%" height="100%" frameborder="0" style="background:transparent;display:block"></iframe>`;area.select();document.execCommand('copy');const btn=document.getElementById('b_gen');const old=btn.innerText;btn.innerText="ГОТОВО!";btn.style.background="#fff";setTimeout(()=>{btn.innerText=old;btn.style.background="";},1500);
         }
     };
