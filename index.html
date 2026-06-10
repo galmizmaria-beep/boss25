@@ -59,10 +59,8 @@
         
         .char-box { 
             width: 40%; height: auto; display: flex; align-items: flex-end; justify-content: center; 
-            position: absolute; transition: bottom 0.3s ease-out;
+            position: absolute; transition: bottom 0.3s ease-out, left 0.3s ease-out, right 0.3s ease-out;
         }
-        .char-box:first-child { left: 10%; } /* Hero */
-        .char-box:last-child { right: 10%; } /* Boss */
         
         .char-img { max-width: 100%; max-height: 100%; object-fit: contain; transition: 0.3s; }
         .quest-dock { position: absolute; bottom: 0; left: 0; right: 0; background: var(--bg-panel); border-top: 3px solid var(--cyan); padding: 15px; z-index: 10; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
@@ -78,7 +76,6 @@
         .btn-generate { background: var(--green); color: #000; padding: 12px 25px; width: 100%; font-size: 14px; font-family: 'Rajdhani', sans-serif; font-weight: 700; text-transform: uppercase; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 0 15px var(--green); transition: 0.3s; }
         .btn-generate:hover { box-shadow: 0 0 30px var(--green); filter: brightness(1.2); }
 
-        /* НОВЫЙ КЛАСС ДЛЯ КНОПОК ПОДТВЕРЖДЕНИЯ */
         .modal-btn { 
             background: #8a4fff; 
             border: 1px solid #b388ff; 
@@ -125,6 +122,11 @@
                                 <input type="range" id="r_h_landing" min="0" max="40" value="15" style="width:60%">
                                 <span id="val_h_landing" style="width:10%; text-align: right;">15%</span>
                             </div>
+                            <div class="param-row">
+                                <span>Отступ от края</span>
+                                <input type="range" id="r_h_posx" min="0" max="45" value="10" style="width:60%">
+                                <span id="val_h_posx" style="width:10%; text-align: right;">10%</span>
+                            </div>
                         </div>
                     </div>
                     <div id="cfg_boss" style="display:none;">
@@ -143,6 +145,11 @@
                                 <span>Приземление</span>
                                 <input type="range" id="r_b_landing" min="0" max="40" value="15" style="width:60%">
                                 <span id="val_b_landing" style="width:10%; text-align: right;">15%</span>
+                            </div>
+                            <div class="param-row">
+                                <span>Отступ от края</span>
+                                <input type="range" id="r_b_posx" min="0" max="45" value="10" style="width:60%">
+                                <span id="val_b_posx" style="width:10%; text-align: right;">10%</span>
                             </div>
                         </div>
                     </div>
@@ -196,8 +203,8 @@
     <script>
         const app={previewQuestIndex:0,currentQuestIndex:-1,quests:[],locations:[],musicFile:null,gameLang:'ru',
         data:{
-            hero:{src:'',anim:'idle',size:100,gC:'#00e5ff',gP:0,speed:3, landingOffset: 15},
-            boss:{src:'',anim:'idle',size:100,gC:'#ff0055',gP:0,speed:3, landingOffset: 15},
+            hero:{src:'',anim:'idle',size:100,gC:'#00e5ff',gP:0,speed:3, landingOffset: 15, posX: 10},
+            boss:{src:'',anim:'idle',size:100,gC:'#ff0055',gP:0,speed:3, landingOffset: 15, posX: 10},
             timer:5,
             timerOn:true,
             titleScreenOn:true
@@ -351,6 +358,19 @@
             document.getElementById('val_h_landing').innerText = this.data.hero.landingOffset + '%';
             document.getElementById('val_b_landing').innerText = this.data.boss.landingOffset + '%';
 
+            /* НОВЫЕ СЛУШАТЕЛИ ДЛЯ ПОЗИЦИИ ПО X */
+            document.getElementById('r_h_posx').oninput = e => {
+                this.data.hero.posX = e.target.value;
+                document.getElementById('val_h_posx').innerText = e.target.value + '%';
+                this.updatePreview();
+            };
+            document.getElementById('r_b_posx').oninput = e => {
+                this.data.boss.posX = e.target.value;
+                document.getElementById('val_b_posx').innerText = e.target.value + '%';
+                this.updatePreview();
+            };
+            document.getElementById('val_h_posx').innerText = this.data.hero.posX + '%';
+            document.getElementById('val_b_posx').innerText = this.data.boss.posX + '%';
 
             document.getElementById('c_h_glow').oninput=e=>{this.data.hero.gC=e.target.value;this.updatePreview();};
             document.getElementById('c_b_glow').oninput=e=>{this.data.boss.gC=e.target.value;this.updatePreview();};
@@ -366,12 +386,10 @@
                 item.innerHTML=`<span>${i+1}. ${q.text||'Новый вопрос'}</span><div><button class="fx-btn" onclick="app.editQuest(${i})">✏️</button><button class="fx-btn" style="color:var(--primary)" onclick="app.deleteQuest(${i})">🗑️</button></div>`;
                 list.appendChild(item);
             });
-            // Обновляем формулы в списке
             setTimeout(() => { if(window.MathJax) MathJax.typesetPromise([list]); }, 50);
             this.updatePreview();
         },
         
-        /* ОБНОВЛЕННОЕ КАСТОМНОЕ ОКНО ПОДТВЕРЖДЕНИЯ */
         customConfirm(text, action) {
             const overlay = document.createElement('div');
             overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;';
@@ -438,12 +456,15 @@
                 }
             }
             
-            // Рендер MathJax для предпросмотра
             setTimeout(() => {
                 if (window.MathJax) {
                     MathJax.typesetPromise([document.getElementById('prev_q_text'), document.getElementById('prev_q_btns')]);
                 }
             }, 50);
+
+            /* ОБНОВЛЯЕМ ПОЗИЦИЮ ГЕРОЕВ В ПРЕДПРОСМОТРЕ */
+            document.getElementById('prev_hero_box').style.left = h.posX + '%';
+            document.getElementById('prev_boss_box').style.right = b.posX + '%';
 
             const apply=(elId,d)=>{
                 const img=document.getElementById(elId);
@@ -552,8 +573,8 @@ body{margin:0;overflow:hidden;font-family:'Rajdhani',sans-serif;user-select:none
     width:35%; height:auto; display:flex; align-items:flex-end; justify-content:center; 
     position:absolute; transition:transform 1s ease-in-out, opacity 0.5s;
 }
-.hero-wrap{left:5%;}
-.boss-wrap{right:5%;}
+.hero-wrap{left:${d.hero.posX}%;}
+.boss-wrap{right:${d.boss.posX}%;}
 .char{max-width:100%;max-height:100%;object-fit:contain;transition:filter 0.5s, opacity 0.5s;}
 #projectile { position: absolute; width: 30px; height: 30px; border-radius: 50%; opacity: 0; z-index: 100; transition: left 0.5s linear, top 0.5s linear, transform 0.2s, opacity 0.2s; pointer-events: none; transform-origin: center; margin-left: -15px; margin-top: -15px; }
 .score-popup{position:fixed;z-index:101;opacity:0;font-family:'Press Start 2P',cursive;font-size:20px;transform:translateX(-50%);pointer-events:none;}
